@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import lagrange
+
 #%%
 
-n = 100
+n = 23
 
 def Lagrange(n_values,func):
     """
@@ -11,7 +13,9 @@ def Lagrange(n_values,func):
     Comments:
         Seems to tail off at large values of x at large n, around n > 21
     """
-    x = np.linspace(0,100,n_values)
+    max_value = 10
+    
+    x = np.linspace(0,max_value,n_values)
     y = func(x)
     
     final_poly = [0]
@@ -36,14 +40,29 @@ def Lagrange(n_values,func):
         
     plot_func = np.poly1d(final_poly)
     plt.plot(x,plot_func(x),label = "Lagrange")
-#    plt.figure()
-    plt.plot(x,y,label = "Original")
-    plt.xlim(0,60)
-    plt.ylim(1,-1)
-    plt.legend()
     print(plot_func)
+
+    x_values = np.linspace(0,max_value,100)
+    y_values = func(x_values)
+    plt.plot(x_values,y_values,label = "Original")
+    poly = lagrange(x, y)
+    plt.plot(x,poly(x),label = "scipy")
+    plt.legend()
+    plt.title("Sin plot - Lagrange Polynomials")
+    
     
 Lagrange(n,np.sin)
+
+#%%
+
+from scipy.interpolate import lagrange
+x = np.array([0, 1, 2])
+y = x**3
+poly = lagrange(x, y)
+print(poly)
+
+from numpy.polynomial.polynomial import Polynomial
+Polynomial(poly).coef
 
 #%%
 
