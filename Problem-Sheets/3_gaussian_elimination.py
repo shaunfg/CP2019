@@ -5,7 +5,6 @@
 """
 import numpy as np
 
-A = [[1,4,3,4],[1,0,5,4],[2,0,3,4]]
 
 def gaussian_elimination(A):
     """
@@ -54,9 +53,10 @@ def gaussian_elimination(A):
 
     return A
 
-
-
-B = gaussian_elimination(A)
+if __name__ == "__main__":
+    A = [[1,4,3,4],[1,0,5,4],[2,0,3,4]]
+    
+    B = gaussian_elimination(A)
 
 
 

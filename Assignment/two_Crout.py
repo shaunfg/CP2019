@@ -7,7 +7,7 @@ Created on Sat Oct 19 11:58:47 2019
 
 import numpy as np
 
-def Crout(matrix):
+def Crout(matrix,det):
     """
     Taken the lower matrix as containing the ones,
     """
@@ -32,13 +32,15 @@ def Crout(matrix):
                 lower[i][j] = (A[i][j] - rest_sum)/ (upper[j][j])
     print("a) Original Matrix \n{}\n\n Lower Matrix \n{}\n\n Upper Matrix \n{}\n".format(np.mat(A),np.mat(lower),
                                                                                         np.mat(upper)))
-
-    det_A = np.linalg.det(A)
-    det_lower = np.linalg.det(lower)
-    det_upper = np.linalg.det(upper)
-    
-    print("b) Det(Lower) = {}, Det(Upper) = {}, Det(A) = {}, Floating point error = {}\n".format(det_lower,det_upper,det_A,
-                                                                                            det_A - det_lower*det_upper))
+    if det == True:
+        det_A = np.linalg.det(A)
+        det_lower = np.linalg.det(lower)
+        det_upper = np.linalg.det(upper)
+        
+        print("b) Det(Lower) = {}, Det(Upper) = {}, Det(A) = {}, Floating point error = {}\n".format(det_lower,det_upper,det_A,
+                                                                                         det_A - det_lower*det_upper))
+    else:
+        pass
     return lower,upper
 
 def Forward_Backward(lower,upper,B = None):
@@ -68,6 +70,8 @@ def Forward_Backward(lower,upper,B = None):
         x_values[i] = (y_values[i] - sum_rest) / U[i][i]
 
     print("c)d) Value of x = {}\n".format(x_values))
+    
+    return x_values
 
 def Inverse(matrix,lower,upper):
     """
@@ -87,9 +91,12 @@ if __name__ == "__main__":
              [0,9,20,10,0],
              [0,0,-22,31,-25],
              [0,0,0,-55,61]]
+    
+#    mat_b = [[0.,0.66666667, 0.16666667],[0.16666667 ,1.,0.        ]]
+#             [0,0,0,-55,61]]
 
     B = [2,5,-4,8,9]
     
-    lower_b, upper_b = Crout(mat_b)
+    lower_b, upper_b = Crout(mat_b,det = False)
     Forward_Backward(lower_b,upper_b,B)
     Inverse(mat_b,lower_b,upper_b)
