@@ -82,7 +82,6 @@ def Cubic_Spline(x,x_i,y_i):
     N_discrete_values = len(x_i) 
     
     f_dash = Form_Matrix(x_i,y_i)
-    f_dash = 
     
     # range to -1 as goes from i to i+1
     def Interpolate(xi_bottom,xi_top,x):
@@ -95,9 +94,9 @@ def Cubic_Spline(x,x_i,y_i):
         C = 1/6 * (A**3 - A)*(xi_top - x_bottom)**2
         D = 1/6 * (B**3 - B)*(xi_top - x_bottom)**2
         f_dash_bot =  y_i[x_i.index(x_bottom)]
+        f_dash_top =  y_i[x_i.index(x_top]
         print(f_i * A)
 #        f = A*y_i[]
-
 x = np.arange(0,10,1)
 Cubic_Spline(x,sample_data_x,sample_data_y)
             
