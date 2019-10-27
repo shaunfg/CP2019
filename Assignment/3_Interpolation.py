@@ -128,7 +128,7 @@ if __name__ == "__main__":
     y_i = [0.012155,0.122151,0.184520,0.960789,0.990050,0.977751,0.422383,0.298197,
          0.105399,3.936690e-4,5.355348e-7]
     
-    print(vals)
+#    print(vals)
     
     x = np.arange(min(sample_data_x),max(sample_data_x),0.1)
     Cubic_Spline(x,sample_data_x,sample_data_y,"Spline with Sample Data")
