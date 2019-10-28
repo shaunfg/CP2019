@@ -10,19 +10,65 @@ import matplotlib.pyplot as plt
 from two_Crout import Crout,Forward_Backward
 
 
-#%% Linear Plot
-
-def Linear(x,y):
-    plt.plot(x,y)
-    plt.plot(x,y,'x')
+def Linear(x,y,N_density):
+    """
+    Forms Linear plot by creating a linear regression between each point, 
+        and subsequent relevant points. [ y = mx + c ]
     
+    ----------
+    Parameters:
+    ----------
+    N_density: Number of extra data points, between each point. 
+    x,y: Input arrays of x and y values. 
+    """
+    x_values = []
+    y_values = []
+    
+    for i in range(len(x)-1):
+        m = (y[i+1] - y[i])/ (x[i+1] - x[i])
+        c = y[i] - m * x[i]
+        
+        for j in range(N_density):
+            x_tmp = np.linspace(x[i],x[i+1],N_density)
+            y_tmp = m * x_tmp + c
+            
+            x_values.append(list(x_tmp))
+            y_values.append(list(y_tmp))
+            
+    # Flattens List
+    x_values = [item for sublist in x_values for item in sublist]
+    y_values = [item for sublist in y_values for item in sublist]
+
+    plt.figure()
+    plt.plot(x,y,'x',label = "Original Points")
+    plt.plot(x_values,y_values,label = "Linear Interpolation")
+    plt.legend()
     plt.title("Linear Plot")
-    return
+    return 
 
 
 def Form_Matrix(x,y):
     """
-    Boundary Conditions: f"o = f"n = 0
+    Forms Matrix of coefficients, corresponding to the 2nd derivatives of the
+        function, for the number of points.
+        
+    If there are N points, we will need N+1 equations to solve, but we will
+        only obtain N-1 equations. In this nature, the natural spline boundary
+        condition was used. 
+        
+        --> In applying this, I removed the first and last column of the
+            M-2 * M matrix, in order to solve using crouts method. These 
+            variables are tehn added back later to solve for the 2nd 
+            derivatives
+            
+    Boundary Conditions: f"o = f"n = 0 
+    -----------------------------------
+
+    ----------
+    Parameters:
+    ----------
+    x,y: Input arrays of x and y values. 
+    
     """
     N_samples = len(x) 
     matrix = []
@@ -59,11 +105,23 @@ def Form_Matrix(x,y):
 
 def Cubic_Spline(x,x_i,y_i,title):
     """
-    For all the x values input, calculate the f(x) for all the x_i and f_is,
-        then iterate through to repeat through all of them
+    For an input value x, find its closest two x_i points, in order to fit
+        it with its suitable cubic spline values. If it is equal to a lower
+        bound of x_i, this function selects the next x_i value to perform
+        the cubic spline interpolation. 
+        
+    For example, if x = 3.5, out of x_i = [1,2,3,4,5], we pick x_i = {3,4} 
+        in order to perform the interpolations.
+        
+        orif x = 3, we pick x_i = {3,4} also. 
     
-    x: array of values to plot
-    x_i,y_i: array of values to form cubic spline
+    ----------
+    Parameters:
+    ----------
+    x: array of values to fit using cubic spline interpolation 
+    x_i,y_i: array of x,y values used to find the parameters to make cubic 
+                spline interpolation
+    title: title of graph plot
     
     """
     
@@ -94,6 +152,7 @@ def Cubic_Spline(x,x_i,y_i,title):
     spline_x = []
     spline_y = []
         
+    # Selects appropriate range that x will fall into
     for i in range(len(x)):
         for j in range(len(x_i)):
             # Skip if larger than final x_i value, so out of range
@@ -117,9 +176,7 @@ def Cubic_Spline(x,x_i,y_i,title):
 
 if __name__ == "__main__":
     
-    # Linear(x,y)
-    
-    
+    # Sample data to verify validity of cubic spline plot
     sample_data_x = [1,2,3,5,8,10,18,20,25,45]
     sample_data_y = [4,7,9,12,15,1,3,4,5,3]
     
@@ -133,8 +190,15 @@ if __name__ == "__main__":
     x = np.arange(min(sample_data_x),max(sample_data_x),0.1)
     Cubic_Spline(x,sample_data_x,sample_data_y,"Spline with Sample Data")
     
+    N_points_between_plots = 5    
+    Linear(x_i,y_i,N_points_between_plots)
+    
     x = np.arange(min(x_i),max(x_i),0.1)
     Cubic_Spline(x,x_i,y_i,"Spline with Data from Assignment")
+    
+
+    
+
     
                 
 
