@@ -41,7 +41,7 @@ transformation = np.arcsin(random_variables) * 2
 plt.hist(transformation,bins = 50)
 
 plt.figure()
-verify_x = np.linspace(0,1,100)
+verify_x = np.linspace(0,np.pi,100)
 plt.plot(verify_x,1/2 * np.cos(verify_x/2))
 
 elapsed_ii = timeit.default_timer() - start_time_ii
@@ -52,52 +52,108 @@ elapsed_ii = timeit.default_timer() - start_time_ii
 If not invertible function, the use rejection method
 
 """
-start_time_iii = timeit.default_timer()
+
+def Rejection_Method(PDF_function, comparison_function, x_lim,title):
+    
+    x_values = []
+    x_values_rejected = []
+    
+    x_values_plot = []
+    x_values_plot_rejected = []
+    y_values = []
+    y_values_rejected = []
+    
+    all_x = []
+    all_y = []
+
+    count = 0
+    
+    while len(x_values)< 10**5:
+        random_PDF_x = random.uniform(0,x_lim)
+        random_PDF_y = PDF_function(random_PDF_x)
+        
+        random_comp_x = random.uniform(0,x_lim)
+        random_comp_y = random.uniform(0,comparison_function(random_comp_x))
+        all_x.append(random_comp_x)
+        all_y.append(random_comp_y)
+
+    #    random_comp_y = random.uniform(0,0.65)
+        
+        if random_PDF_y > random_comp_y:
+            x_values.append(random_PDF_x)
+            x_values_plot.append(random_comp_x)
+            y_values.append(random_comp_y)
+
+        else:
+            count+=1
+            x_values_rejected.append(random_PDF_x)
+            x_values_plot_rejected.append(random_comp_x)
+            y_values_rejected.append(random_comp_y)
+#            plt.plot(x_values_plot_rejected,y_values_rejected)
+            # plt.plot(x_values_rejected,y_values_rejected)
+            # plt.show()
+            pass
+    N_plots = 5000
+    verify_x = np.linspace(0,x_lim,100)
+
+    plt.figure()    
+    plt.plot(all_x[:5000],all_y[:5000])
+    plt.title("thisone")
+    
+#    plt.figure()
+#    plt.plot(x_values[:N_plots],y_values[:N_plots])
+#    plt.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],alpha = 0.5)
+#    
+    plt.figure()
+    plt.plot(x_values_plot_rejected[:N_plots],y_values_rejected[:N_plots],'x',alpha = 0.5,)
+    plt.plot(x_values_plot[:N_plots],y_values[:N_plots],'x')
+    
+    fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize=(8,13))
+    ax1.hist(x_values,bins = 100) 
+    
+    ax2.plot(verify_x,comparison_function(verify_x),label = 'Comparison')
+    ax2.plot(verify_x,PDF_function(verify_x),label = 'Original')
+    
+    ax3.plot(x_values[:N_plots],y_values[:N_plots],"x",label = "Accepted")    
+    ax3.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],"x",
+             label = "Rejected")
+    
+    ax1.set_title("Histogram of random points using {}".format(title))
+    ax2.set_title("PDF vs Comparison Function")
+    ax3.set_title("Scatter plot of accepted and rejected points")
+    ax2.legend()
+    ax3.legend()
 
 
-def comparison_function(x):
-    return 1/2 * np.cos(x/2)* 2.4 - 0.56
 
-def actual_function(x):
+    return x_values_rejected,y_values_rejected
+
+
+def func_uniform(x):
+    return x*0 +0.65
+
+def func_comparison_example(x):
+    return 3/10 * np.cos(x) + 0.5#0.337
+
+def PDF(x):
     return 2/np.pi * np.cos(x/2)**2
 
-y_min = 0
-y_max = 1
 
-x_values = []
-x_values_rejected = []
-count = 0
+x_lim = np.pi
 
-while len(x_values)< 10**5:
-    random_actual_x = random.uniform(0,1)
-    random_actual_y = actual_function(random_actual_x)
-    
-    random_comp_x = random.uniform(0,1)
-    random_comp_y = comparison_function(random_comp_x)
-#    random_comp_y = random.uniform(0,0.65)
-    
-    if random_actual_y < random_comp_y:
-        count+=1
-        x_values_rejected.append(random_actual_x)
-        pass
-    else:
-        x_values.append(random_actual_x)
-        
-plt.figure()
-plt.hist(x_values,bins = 100) 
-
+start_time_iii = timeit.default_timer()
+Rejection_Method(PDF,func_comparison_example,x_lim,"cos comparison")
 elapsed_iii = timeit.default_timer() - start_time_iii
-
-
-plt.figure()
-plt.plot(verify_x,comparison_function(verify_x),label = 'comparison')
-verify_x = np.linspace(0,1,100)
-plt.plot(verify_x,actual_function(verify_x))
-plt.legend()
-
 ratio = elapsed_iii/elapsed_ii
-
 print("Rejection Method is {:.2f} times slower".format(ratio))
 
+start_time_iii = timeit.default_timer()
+Rejection_Method(PDF,func_uniform,x_lim,"uniform comparison")
+elapsed_iii = timeit.default_timer() - start_time_iii
+ratio = elapsed_iii/elapsed_ii
+print("Rejection Method is {:.2f} times slower".format(ratio))
+
+plt.show()
 #TODO Theoretical Ratio?
+
 

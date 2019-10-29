@@ -15,7 +15,7 @@ def Crout(matrix,det):
 
     N_rows = len(A)
     N_columns = len(A[0])
-    
+
     upper = [[0]*N_columns for i in range(N_rows)]
     lower = [[0]*N_columns for i in range(N_rows)]
 
