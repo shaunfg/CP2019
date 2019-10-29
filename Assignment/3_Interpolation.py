@@ -196,9 +196,19 @@ if __name__ == "__main__":
     x = np.arange(min(x_i),max(x_i),0.1)
     Cubic_Spline(x,x_i,y_i,"Spline with Data from Assignment")
     
-
+#%%
     
+for i in range(N_values):
+    x = random_value
+    y = max(np.linspace(0,max(C),N_values))
 
+pick x value
+find random y value
+big square, 
+
+Value of actual function, at that x
+
+compare 
     
                 
 
