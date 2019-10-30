@@ -40,13 +40,13 @@ def Linear(x,y,N_density):
     y_values = [item for sublist in y_values for item in sublist]
 
     plt.figure()
-    plt.plot(x,y,'x',label = "Original Points")
+    plt.plot(x,y,label = "Original Points")
     plt.plot(x_values,y_values,label = "Linear Interpolation")
     plt.legend()
     plt.title("Linear Plot")
     return 
 
-
+#%%
 def Form_Matrix(x,y):
     """
     Forms Matrix of coefficients, corresponding to the 2nd derivatives of the
@@ -169,10 +169,12 @@ def Cubic_Spline(x,x_i,y_i,title):
 
     plt.figure()
     plt.title(title)
+    plt.plot(x_i,y_i,'x',label = "Original plots")
     plt.plot(x_i,y_i,label = "Original plots")
+
     plt.plot(spline_x,spline_y,label = "Spline")
     plt.legend()
-
+ 
 
 if __name__ == "__main__":
     
@@ -187,31 +189,15 @@ if __name__ == "__main__":
     
 #    print(vals)
     
-    x = np.arange(min(sample_data_x),max(sample_data_x),0.1)
+    x = np.arange(min(sample_data_x),max(sample_data_x),0.001)
     Cubic_Spline(x,sample_data_x,sample_data_y,"Spline with Sample Data")
     
     N_points_between_plots = 5    
     Linear(x_i,y_i,N_points_between_plots)
     
-    x = np.arange(min(x_i),max(x_i),0.1)
+    x = np.arange(min(x_i),max(x_i),0.001)
     Cubic_Spline(x,x_i,y_i,"Spline with Data from Assignment")
     
-#%%
-    
-for i in range(N_values):
-    x = random_value
-    y = max(np.linspace(0,max(C),N_values))
-
-pick x value
-find random y value
-big square, 
-
-Value of actual function, at that x
-
-compare 
-    
-                
-
 
 
 

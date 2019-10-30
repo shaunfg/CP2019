@@ -74,6 +74,7 @@ def Rejection_Method(PDF_function, comparison_function, x_lim,title):
         
         random_comp_x = random.uniform(0,x_lim)
         random_comp_y = random.uniform(0,comparison_function(random_comp_x))
+        
         all_x.append(random_comp_x)
         all_y.append(random_comp_y)
 
@@ -99,18 +100,15 @@ def Rejection_Method(PDF_function, comparison_function, x_lim,title):
     plt.figure()    
     plt.plot(all_x[:5000],all_y[:5000])
     plt.title("thisone")
-    
-#    plt.figure()
-#    plt.plot(x_values[:N_plots],y_values[:N_plots])
-#    plt.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],alpha = 0.5)
-#    
+
     plt.figure()
     plt.plot(x_values_plot_rejected[:N_plots],y_values_rejected[:N_plots],'x',alpha = 0.5,)
     plt.plot(x_values_plot[:N_plots],y_values[:N_plots],'x')
     
     fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize=(8,13))
-    ax1.hist(x_values,bins = 100) 
-    
+    heights,bins,patched = ax1.hist(x_values,bins = 100) 
+    sample_x = np.linspace(0,np.pi,1000)
+    ax1.plot(sample_x,PDF_function(sample_x)*heights[0] *np.pi/2)
     ax2.plot(verify_x,comparison_function(verify_x),label = 'Comparison')
     ax2.plot(verify_x,PDF_function(verify_x),label = 'Original')
     
@@ -123,7 +121,9 @@ def Rejection_Method(PDF_function, comparison_function, x_lim,title):
     ax3.set_title("Scatter plot of accepted and rejected points")
     ax2.legend()
     ax3.legend()
-
+    Efficiency = len(x_values)/ (len(x_values_rejected)+len(x_values))
+#    
+    print("Efficiency of operation = {}".format(Efficiency))
 
 
     return x_values_rejected,y_values_rejected

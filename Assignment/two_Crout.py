@@ -6,6 +6,7 @@ Created on Sat Oct 19 11:58:47 2019
 """
 
 import numpy as np
+from functools import reduce
 
 def Crout(matrix,det):
     """
@@ -34,8 +35,9 @@ def Crout(matrix,det):
                                                                                         np.mat(upper)))
     if det == True:
         det_A = np.linalg.det(A)
-        det_lower = np.linalg.det(lower)
-        det_upper = np.linalg.det(upper)
+        det_lower = reduce(lambda x, y: x*y, [lower[i][i]  for i in range(len(lower))])
+
+        det_upper = reduce(lambda x, y: x*y, [upper[i][i]  for i in range(len(upper))])
         
         print("b) Det(Lower) = {}, Det(Upper) = {}, Det(A) = {}, Floating point error = {}\n".format(det_lower,det_upper,det_A,
                                                                                          det_A - det_lower*det_upper))
@@ -92,11 +94,10 @@ if __name__ == "__main__":
              [0,0,-22,31,-25],
              [0,0,0,-55,61]]
     
-#    mat_b = [[0.,0.66666667, 0.16666667],[0.16666667 ,1.,0.        ]]
-#             [0,0,0,-55,61]]
+#    mat_b = [[1,2],[3,4]]
 
     B = [2,5,-4,8,9]
     
-    lower_b, upper_b = Crout(mat_b,det = False)
+    lower_b, upper_b = Crout(mat_b,det = True)
     Forward_Backward(lower_b,upper_b,B)
     Inverse(mat_b,lower_b,upper_b)
