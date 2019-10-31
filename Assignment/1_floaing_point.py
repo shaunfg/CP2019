@@ -10,11 +10,12 @@ import numpy as np
 def machineEpsilon(func=np.float64):
     machine_epsilon = func(1)
     while func(1)+func(machine_epsilon) != func(1):
-        print(machine_epsilon)
         machine_epsilon_last = machine_epsilon
         machine_epsilon = func(machine_epsilon) / func(2)
+        print(machine_epsilon)
     return machine_epsilon_last
+
 
 a = machineEpsilon()
 print(a)
-print(np.finfo(float).eps)
+# print(np.finfo(float).eps)

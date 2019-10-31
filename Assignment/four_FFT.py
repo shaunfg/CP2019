@@ -52,6 +52,7 @@ def Convolution(time_values,func_1,func_2):
 #    print(np.real(fft_convoluted))
     
     convoluted = np.fft.ifft(fft_convoluted)   
+    
     convoluted = np.fft.fftshift(np.abs(convoluted))
     
     print(convoluted)
