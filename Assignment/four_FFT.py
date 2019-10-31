@@ -11,90 +11,90 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def g(t):
+    """
+    Gaussian Function, takes in an array of discrete data points. 
+    
+    Returns a normalized Gaussian
+    """
     values = 1/np.sqrt(2*np.pi) * np.exp(-t**2/2)
-    values = values/sum(values)
-    return values
+    values_normalized = values/sum(values)
+    return values_normalized
 
 def h(t):
-    
+    """
+    Tophat function, takes in an array of discrete data points
+    """
     values = []
-    
     for i in range(len(t)):
-        if t[i]>=0 and t[i]<=5:
+        if t[i]>=3 and t[i]<=5:
             h = 4
         else:
             h = 0
         values.append(h)
-        
-        
     return values
 
-def Convolution(time_values,func_1,func_2):
+def Convolution(time_values,func_1,func_2,plot = True):
     """
-    F(f*g) = F(f)F(g)
+    Performs a convolutions using the convolution theroem:
+        F(f*g) = F(f)F(g)
+    Thus finds convolutions of both functions separately, find the product, 
+        and completes and inverse fourier transform
     
-    func1 = tophat
-    func2 = gaussian
+    The convoluted result is then required to undergo an fftshift, to shift
+        the negative values to the beginning of the array. This is
+        due to the nature of the algorithm
+    
+    -----------
+    Parameters:
+    -----------
+    time_values: Array of discrete time values
+    func1 : Tophat function
+    func2 : Gaussian function
+    plot : True/False, to plot the graphs. 
     """
-    
+    # Fourier transform of tophat and gaussian
     fft_first = np.fft.fft(func_1(time_values))
-#    fft_first = np.fft.fftshift(fft_first)/ np.sqrt(len(time_values))    
-#    fft_first = fft_first/sum(fft_first)
-    
     fft_second = np.fft.fft(func_2(time_values))
-#    fft_second = np.fft.fftshift(np.abs(fft_second)) / np.sqrt(len(time_values))
     
-#    np.fft.fftshift(np.abs(np.fft.fft(g(x))))
-    
+    # Product of Fourier transforms
     fft_convoluted = fft_first * fft_second
     
-#    fft_convoluted = np.fft.fftshift(np.abs(fft_convoluted))/ np.sqrt(len(time_values))
-#    print(np.real(fft_convoluted))
-    
+    # Inverse Fourier Transform and shift for accurate plotting
     convoluted = np.fft.ifft(fft_convoluted)   
-    
     convoluted = np.fft.fftshift(np.abs(convoluted))
+
+    if plot == True:
+        
+        sample_x = np.linspace(-10,10,1000)
+        
+        # Shift fourier transforms of tophat and gaussian, for correct plotting
+        fft_first_plot = np.fft.fftshift(fft_first)/np.sqrt(len(fft_first))
+        fft_second_plot = np.abs(np.fft.fftshift(fft_second)/np.sqrt(len(fft_second)))
     
-    print(convoluted)
-    plt.figure()
-    plot(func_1)
-    plt.plot(time_values,fft_first,label = "F(tophat)")
-    plt.figure()
-    plot(func_2)    
-    plt.plot(time_values,fft_second,label = "F(gaussian)")
-    plt.figure()
-    plt.plot(time_values,fft_convoluted,label = "F(top*gauss)")
-    plt.legend()
+        # Plots tophat, gaussian and the convolution 
+        fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize = (5,8))
+        ax1.set_title("Fourier Transforms")
     
-    plt.figure()
-    plt.plot(time_values,convoluted)
+        ax1.plot(sample_x,func_1(sample_x),label = "Tophat")
+        ax1.plot(time_values,fft_first_plot,label = "F(Tophat)")
+        ax1.legend()
+    
+        ax2.plot(sample_x,func_2(sample_x),label = "Gaussian")
+        ax2.plot(time_values,fft_second_plot,label = "F(Gaussian)")
+        ax2.legend()
+    
+        ax3.plot(time_values,convoluted,label = "Convoluted Gauss*Tophat")
+        ax3.plot(time_values,func_1(time_values),label = "Tophat")
+        ax3.legend()
 
-def plot(func):
-    x = np.linspace(-10,10,1000)
-    plt.plot(x,func(x))
-
-# Padding to increase speed of fft
-N_samples = 2**(10)
-
-time = np.linspace(-10,10,N_samples)
-
-Convolution(time,h,g)
-
-plt.show()
-
-# plt.plot(time,np.sin(time))
-# plt.figure()
-# plt.plot(time,np.fft.fft(np.sin(time)))
-
-#%%
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-N = 128
-x = np.arange(-5, 5, 10./(2 * N))
-#y = np.exp(-x * x)
-y_fft = np.fft.fftshift(np.abs(np.fft.fft(g(x))))# / np.sqrt(len(y))
-plt.plot(x,y)
-plt.plot(x,y_fft)
-plt.show()
+    else:
+        pass
+    
+if __name__ == "__main__":
+    
+    # Padding to increase speed of fft
+    N_samples = 2**(10)
+    
+    time = np.linspace(-10,10,N_samples)
+    Convolution(time,h,g,plot = True)
+    
