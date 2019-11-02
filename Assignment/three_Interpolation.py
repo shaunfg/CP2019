@@ -39,8 +39,8 @@ def Linear(x,y,N_density):
     x_values = [item for sublist in x_values for item in sublist]
     y_values = [item for sublist in y_values for item in sublist]
 
-    plt.figure()
-    plt.plot(x,y,label = "Original Points")
+    plt.figure(figsize = (8,5))
+    plt.plot(x,y,'x',label = "Original Points")
     plt.plot(x_values,y_values,label = "Linear Interpolation")
     plt.legend()
     plt.title("Linear Plot")
@@ -167,10 +167,10 @@ def Cubic_Spline(x,x_i,y_i,title):
                 spline_x.append(x[i])
                 spline_y.append(y_value)
 
-    plt.figure()
+    plt.figure(figsize = (8,5))
     plt.title(title)
     plt.plot(x_i,y_i,'x',label = "Original plots")
-    plt.plot(x_i,y_i,label = "Original plots")
+    plt.plot(x_i,y_i,label = "Linear")
 
     plt.plot(spline_x,spline_y,label = "Spline")
     plt.legend()

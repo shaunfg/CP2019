@@ -72,7 +72,7 @@ def Convolution(time_values,func_1,func_2,plot = True):
         fft_second_plot = np.abs(np.fft.fftshift(fft_second)/np.sqrt(len(fft_second)))
     
         # Plots tophat, gaussian and the convolution 
-        fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize = (5,8))
+        fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize = (8,8))
         ax1.set_title("Fourier Transforms")
     
         ax1.plot(sample_x,func_1(sample_x),label = "Tophat")

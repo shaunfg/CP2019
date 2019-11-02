@@ -19,7 +19,6 @@ def machineEps(float_type):
     Parameters:
     ----------
     float_type : inputs the type of float function (e.g. float32, float64)
-    
     """
     base = 2
     
@@ -36,9 +35,8 @@ def machineEps(float_type):
     eps = base**(-(precision-1))
     eps_abs_rounding = eps/2
     
-    print("{}, Machine Epsilon = {}, \n(Machine Epsilon Rounding = {})\n".format(
+    print("CHECK1: {}, Machine Epsilon = {}, \n(Machine Epsilon Rounding = {})\n".format(
             float_type,eps,eps_abs_rounding))
-    
     return
 
 def machineEps_check(float_type):
@@ -53,30 +51,37 @@ def machineEps_check(float_type):
 
     ----------
     Parameters:
-    ----------
+    ---------2
     float_type : inputs the type of float function (e.g. float32, float64)    
     
     """
+    
     machine_eps = float_type(1)
-
     while float_type(1) + float_type(machine_eps) != float_type(1):
         machine_eps_last = machine_eps
         machine_eps = float_type(machine_eps) / float_type(2)
                 
-    print("CHECK1: {}\nMachine Epsilon = {},\n(Machine Epsilon Rounding = {})\n".format(
+        
+    print("{}\nMachine Epsilon = {},\n(Machine Epsilon Rounding = {})\n".format(
             float_type,machine_eps_last,machine_eps))
     return 
 
+
+
+
+
 if __name__ == "__main__":
+    print("----------- Hardware Machine Epsilon --------------\n")
+    
+    for float_type in [np.float32,np.float64]:
+        machineEps_check(float_type)
+        
     print("----------- Theoretical Machine Epsilon ------------\n")
 
     for float_type in ["32bit","64bit","extended"]:
         machineEps(float_type)
     
-    print("----------- Hardware Machine Epsilon --------------\n")
-    
-    for float_type in [np.float32,np.float64]:
-        machineEps_check(float_type)
+
     
     print("------------- Numpy Machine Epsilon ---------------\n")
     
