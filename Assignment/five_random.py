@@ -58,7 +58,7 @@ def Transformation():
     random_variables = [random.uniform(0,1) for i in range(10**5)]
     transformation = np.arcsin(random_variables) * 2
     
-    elapsed_time = timeit.default_timer() - start_time_transformation
+    elapsed_time = timeit.default_timer() - start_time
  
     verify_x = np.linspace(0,np.pi,100)
     
@@ -70,7 +70,7 @@ def Transformation():
              label = "PDF")
     plt.title("Histogram of random points using transformation method")
     plt.legend()
-    return start_time, elapsed_time
+    return elapsed_time
     
     
 #%% Rejection Method
@@ -174,7 +174,7 @@ def Rejection_Method(PDF_function,comparison_function, x_lim,title,scatter):
     
     print("Efficiency of operation for {} = {:.2f}%".format(title,Efficiency))
 
-    return start_time, elapsed_time
+    return elapsed_time
 
 # Uniform function, returns constant for all x
 def func_uniform(x):
@@ -189,7 +189,8 @@ def PDF(x):
     return 2/np.pi * np.cos(x/2)**2
 
 
-
+#%%
+    
 if __name__ == "__main__":
     """
     Start times were returned from transformation and rejection method 
@@ -205,27 +206,27 @@ if __name__ == "__main__":
     Random_Uniform()   
     
     # Runs Transformation Method
-    start_time_transformation, elapsed_transformation = Transformation()
+    elapsed_transformation = Transformation()
 
     # Runs Rejection method for cos comparison 
     comparison_type = "cos comparison"
-    start_cos, elapsed_cos = Rejection_Method(PDF,func_comparison_example,
+    elapsed_cos = Rejection_Method(PDF,func_comparison_example,
                                               x_lim,comparison_type,False)
 
     # Runs Rejection method for uniform comparison     
     comparison_type = "uniform comparison"
-    start_uni, elapsed_uni = Rejection_Method(PDF,func_uniform,x_lim,
+    elapsed_uni = Rejection_Method(PDF,func_uniform,x_lim,
                                               comparison_type,True)
     
     # Calcullates ratio of rejection methods to transformation methods
-    ratio_uni = elapsed_transformation/elapsed_uni
-    ratio_cos = elapsed_transformation/elapsed_cos
+    ratio_uni = elapsed_uni/elapsed_transformation
+    ratio_cos = elapsed_cos/elapsed_transformation
 
     # Display results
-    print("Transformation Method is {:.2f} times slower than rejection for {}\n".format(
+    print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
             ratio_cos,comparison_type))
     
-    print("Transformation Method is {:.2f} times slower than rejection for {}\n".format(
+    print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
             ratio_uni,comparison_type))
     
     print("cos comparison is x{:.2f} times faster than uniform comparison".format(
