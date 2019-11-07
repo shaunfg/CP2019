@@ -42,12 +42,14 @@ def Linear(x,y,N_density):
     plt.figure(figsize = (8,5))
     plt.plot(x,y,'x',label = "Original Points")
     plt.plot(x_values,y_values,label = "Linear Interpolation")
+    #plt.plot(x_values,y_values,'o',label = "Linear Interpolation")
+
     plt.legend()
     plt.title("Linear Plot")
     return 
 
 #%%
-def Form_Matrix(x,y):
+def _Form_Matrix(x,y):
     """
     Forms Matrix of coefficients, corresponding to the 2nd derivatives of the
         function, for the number of points.
@@ -57,7 +59,7 @@ def Form_Matrix(x,y):
         condition was used. 
         
         --> In applying this, I removed the first and last column of the
-            M-2 * M matrix, in order to solve using crouts method. These 
+            M-2 * M matrix, in order Sto solve using crouts method. These 
             variables are tehn added back later to solve for the 2nd 
             derivatives
             
@@ -147,7 +149,7 @@ def Cubic_Spline(x,x_i,y_i,title):
     N_x_values = len(x)    
     N_discrete_values = len(x_i) 
     
-    f_dash_values = Form_Matrix(x_i,y_i)
+    f_dash_values = _Form_Matrix(x_i,y_i)
     
     spline_x = []
     spline_y = []
@@ -192,15 +194,10 @@ if __name__ == "__main__":
     x = np.arange(min(sample_data_x),max(sample_data_x),0.001)
     Cubic_Spline(x,sample_data_x,sample_data_y,"Spline with Sample Data")
     
-    N_points_between_plots = 5    
+    N_points_between_plots = 3
     Linear(x_i,y_i,N_points_between_plots)
+    
     
     x = np.arange(min(x_i),max(x_i),0.001)
     Cubic_Spline(x,x_i,y_i,"Spline with Data from Assignment")
     
-
-
-
-
-
-

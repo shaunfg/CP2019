@@ -23,7 +23,7 @@ def Random_Uniform():
     random_variables_np = np.random.random(10**5)
     
     # Plots values
-    fig, (ax1,ax2) = plt.subplots(2,1, figsize = (5,8))
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize = (8,3))
     ax1.set_title("In-built random function - Uniform")
     ax1.hist(random_variables,bins = 50,color = 'blue')
     ax2.set_title("Numpy random function - Uniform")
@@ -46,7 +46,7 @@ def Transformation():
     In this case:
         PDF(x) = 1/2 * cos(x/2)
     and thus: 
-        F(x) = Integrate: PDF(x) = sin(x/2)
+        F(x) = Integrate:[PDF(x)] ... = sin(x/2)
     Since F(x) = x'
         x = 2 * arcsin(x').
     Thereore, sub values into x' to get values for the new PDF.
@@ -116,59 +116,61 @@ def Rejection_Method(PDF_function,comparison_function, x_lim,title,scatter):
     while len(x_values) < 10**5:
         
         # Generates PDF(y) for a random x value
-        random_PDF_x = random.uniform(0,x_lim)
-        random_PDF_y = PDF_function(random_PDF_x)
+        random_x = random.uniform(0,x_lim)
+        random_PDF_y = PDF_function(random_x)
         
         # Generated a random y value, between 0 and the comparison function: p_i
-        random_comp_x = random.uniform(0,x_lim)
-        random_comp_y = random.uniform(0,comparison_function(random_comp_x))
+        random_comp_y = random.uniform(0,comparison_function(random_x))
 
         # Accept if PDF(x_i) is larger than p_i
         if random_PDF_y > random_comp_y:
-            x_values.append(random_PDF_x)
+            x_values.append(random_x)
             y_values.append(random_comp_y)
         
         # Reject if else. 
         else:
-            x_values_rejected.append(random_PDF_x)
+            x_values_rejected.append(random_x)
             y_values_rejected.append(random_comp_y)
             pass
         
     elapsed_time = timeit.default_timer() - start_time
 
+
+    plt.figure()
+
+
     # Plot graphs to display results
     
     # Reduce on computation time
-    N_plots = 5000
+    N_plots = len(x_values)
 
-    fig,(ax1,ax2) = plt.subplots(2,1,figsize=(7,8))
+    fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize=(7,13))
     
     sample_x = np.linspace(0,np.pi,1000)
-    heights,bins,patched = ax1.hist(x_values,bins = 100,
-                                    label = "Rejection Generated Points") 
-    ax1.plot(sample_x,PDF_function(sample_x)*heights[0] *np.pi/2,
+
+    ax1.plot(x_values[:N_plots],y_values[:N_plots],'o',ms = 0.1,label = "Accepted")
+    ax1.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],'o',
+             ms = 0.1,label = "Rejected")
+    ax1.legend(markerscale = 50)
+    
+    heights,bins,patched = ax3.hist(x_values,bins = 100,
+                                    label = "Rejection Generated Points")     
+    ax3.plot(sample_x,PDF_function(sample_x)*heights[0] *np.pi/2,
              label = "PDF")
-#    ax1.plot(sample_x,comparison_function(sample_x)*heights[0] *np.pi/2,
+    ax3.plot(sample_x,comparison_function(sample_x)*heights[0] *np.pi/2,
+             label = "Comparison")
+#    ax3.plot(sample_x,comparison_function(sample_x)*heights[0] *np.pi/2,
 #             label = "PDF")    
     verify_x = np.linspace(0,x_lim,100)
     ax2.plot(verify_x,comparison_function(verify_x),label = 'Comparison')
     ax2.plot(verify_x,PDF_function(verify_x),label = 'Original')
 
-    ax1.set_title("Histogram of random points using {}".format(title))
+    ax1.set_title("Scatter plot for {} function".format(title))
+    ax3.set_title("Histogram of random points using {}".format(title))
     ax2.set_title("PDF vs Comparison Function")
-    ax1.legend()
+    ax3.legend()
     ax2.legend()
     
-    if scatter == True:
-        plt.figure()
-        plt.plot(x_values[:N_plots],y_values[:N_plots],"x",label = "Accepted")    
-        plt.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],"x",
-                 label = "Rejected")
-        plt.title("Scatter plot for {} function".format(title))
-        plt.legend()
-
-    else:
-        pass
     
     Efficiency = len(x_values)/ (len(x_values_rejected)+len(x_values)) * 100
     
@@ -182,14 +184,14 @@ def func_uniform(x):
 
 # Comparison function 
 def func_comparison_example(x):
-    return 3/10 * np.cos(x) + 0.4
+    return 3/10 * np.cos(x) + 0.344
 
 # Probability density function 
 def PDF(x):
     return 2/np.pi * np.cos(x/2)**2
 
 
-#%%
+
     
 if __name__ == "__main__":
     """
@@ -211,7 +213,7 @@ if __name__ == "__main__":
     # Runs Rejection method for cos comparison 
     comparison_type = "cos comparison"
     elapsed_cos = Rejection_Method(PDF,func_comparison_example,
-                                              x_lim,comparison_type,False)
+                                              x_lim,comparison_type,True)
 
     # Runs Rejection method for uniform comparison     
     comparison_type = "uniform comparison"
@@ -222,17 +224,19 @@ if __name__ == "__main__":
     ratio_uni = elapsed_uni/elapsed_transformation
     ratio_cos = elapsed_cos/elapsed_transformation
 
-    # Display results
     print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
-            ratio_cos,comparison_type))
+            ratio_cos,"cos comparison"))
     
     print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
-            ratio_uni,comparison_type))
+            ratio_uni,"uniform comparison"))
     
     print("cos comparison is x{:.2f} times faster than uniform comparison".format(
             elapsed_cos/elapsed_uni))
-    
-    
     plt.show()
+    
+    print("Printed results and efficiencies shown before plots")    
+    # Display results
+
+    
     
     

@@ -42,11 +42,12 @@ def Crout(matrix,det = True):
                 # rest_sum first calculates the sum component of the equation
                 rest_sum = np.sum([lower[i][k] * upper[k][j] for k in range(i)])
                 upper[i][j] = A[i][j] - rest_sum
+                
                 output[i][j] = upper[i][j]
                 
             # Applies iterative equation that updates the lower matrix
             elif i > j:
-                rest_sum = np.sum([lower[i][k] * upper[k][j] for k in range(i-1)])
+                rest_sum = np.sum([lower[i][k] * upper[k][j] for k in range(i)])
                 lower[i][j] = (A[i][j] - rest_sum)/ (upper[j][j])
                 output[i][j] = lower[i][j]
 
@@ -111,7 +112,7 @@ def Forward_Backward(lower,upper,B = None):
     y_values = [] # location to store solutions
     for i in range(N_rows):
         # Applies equation to calculate solutions to forward
-        rest_sum = sum([L[i][k] * y_values[k] for k in range(len(y_values))])
+        rest_sum = sum([L[i][k] * y_values[k] for k in range(i)])
         y_m = (B[i] - rest_sum)/ L[i][i]
         y_values.append(y_m)        
 
@@ -152,9 +153,8 @@ def Inverse(matrix,lower,upper):
 #    rounded_values = [list(np.round(inverse_mat[i],3)) for i in range(len(inverse_mat))]
 #    print(np.mat(rounded_values))
     
-
 if __name__ == "__main__":
-    # mat_b = [[5,4,1],[10,9,4],[10,13,15]]
+#    mat_b = [[5,4,1],[10,9,4],[10,13,15]]
     mat_b = [[3,1,0,0,0],
              [3,9,4,0,0],
              [0,9,20,10,0],

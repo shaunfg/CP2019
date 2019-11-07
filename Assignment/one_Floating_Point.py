@@ -73,7 +73,7 @@ def machineEps_check(float_type):
 if __name__ == "__main__":
     print("----------- Hardware Machine Epsilon --------------\n")
     
-    for float_type in [np.float32,np.float64]:
+    for float_type in [np.float32,np.float64,np.longdouble]:
         machineEps_check(float_type)
         
     print("----------- Theoretical Machine Epsilon ------------\n")
