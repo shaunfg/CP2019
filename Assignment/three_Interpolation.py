@@ -7,7 +7,7 @@ Created on Tue Oct 22 13:04:57 2019
 
 import numpy as np
 import matplotlib.pyplot as plt
-from two_Crout import Crout,Forward_Backward
+from two_Matrices import Crout,Forward_Backward
 
 
 def Linear(x,y,N_density):
