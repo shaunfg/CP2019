@@ -5,20 +5,15 @@ Created on Sat Oct 26 17:57:22 2019
 
 @author: ShaunGan
 """
-#TODO: Sampling, Aliasing, Padding
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 def g(t):
     """
-    Gaussian Function, takes in an array of discrete data points. 
-    
-    Returns a normalized Gaussian
+    Gaussian Function, takes in an array of discrete data points.
     """
-    values = 1/np.sqrt(2*np.pi) * np.exp(-t**2/2)
-#    values_normalized = values * (max(values) - min(values))/sum(values)
-    return values#_normalized
+    return 1/np.sqrt(2*np.pi) * np.exp(-t**2/2)
 
 def h(t):
     """
@@ -43,7 +38,12 @@ def Convolution(time_values,func_1,func_2,time_min,time_max,plot = True):
     The convoluted result is then required to undergo an fftshift, to shift
         the negative values to the beginning of the array. This is
         due to the nature of the algorithm
-    
+    --------------
+    Normalisation:
+    --------------
+    Outputs from the fourier transform are all multiplied by 1/√N, where
+        N is the number of values after the transform in order to match
+        the amplitude of the input signal
     -----------
     Parameters:
     -----------
@@ -54,7 +54,6 @@ def Convolution(time_values,func_1,func_2,time_min,time_max,plot = True):
     """
     
     # Fourier transform of tophat and gaussian
-    
     fft_first = np.fft.fft(func_1(time_values))
     fft_second = np.fft.fft(func_2(time_values))
                        
@@ -63,7 +62,7 @@ def Convolution(time_values,func_1,func_2,time_min,time_max,plot = True):
     
     # Inverse Fourier Transform and shift for accurate plotting
     convoluted = np.fft.ifft(fft_convoluted)
-    convoluted = convoluted /np.sqrt(len(convoluted))#1/√N to ensure amplitudes match expected.
+    convoluted = convoluted /np.sqrt(len(convoluted)) # 1/√N to ensure amplitudes match expected.
     convoluted = np.fft.fftshift(np.abs(convoluted))
 
     if plot == True:
@@ -77,7 +76,7 @@ def Convolution(time_values,func_1,func_2,time_min,time_max,plot = True):
         # Plots tophat, gaussian and the convolution 
         fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize = (8,8))
         ax1.set_title("Fourier Transforms")
-    
+
         ax1.plot(sample_x,func_1(sample_x),label = "Tophat")
         ax1.plot(time_values,fft_first_plot,label = "F(Tophat)")
         ax1.legend()
@@ -92,6 +91,17 @@ def Convolution(time_values,func_1,func_2,time_min,time_max,plot = True):
 
     else:
         pass
+
+    # Find Sampling Interval
+    dt = max(time_values) - min(time_values) / len(time_values)
+
+    # Calculates Nyquist Frequency
+    nyquist = 2 * max(np.fft.fftfreq(len(fft_second),dt))
+    sampling = 2 * np.pi / dt
+    
+    print("Nyquist Frequency = {:.4f} rad s-1".format(nyquist))
+    print("Sampling Frequency = {:.4f} rad s-1 ".format(sampling))
+
     
 if __name__ == "__main__":
 
@@ -99,65 +109,10 @@ if __name__ == "__main__":
     min_time = -10
     max_time = 10
     period = max_time - min_time
-    
-    # Padding to increase speed of fft
-    N_samples = 2**(9)
-    
-    
-    Nyquist = 1/N_samples * 2*np.pi
-    
-    maximum_frequency = 2*np.pi / (period) * N_samples/2
-    minimum_frequency = 2 * np.pi/period
-    
-    print(Nyquist,maximum_frequency,minimum_frequency)
-    
+
+    N_samples = 2**(9)     # Padding to increase speed of fft
+
+    # Calls Convolution Function
     time = np.linspace(min_time,max_time,N_samples)
     Convolution(time,h,g,min_time,max_time,plot = True)
-    
-    
-    
-#%% Verify 
-    
-def gaussian(t):
-    a= 1
-    values =1/np.sqrt(2*np.pi)* np.exp(-t**2/2*a**2)
-    return values#_normalized
-
-def h(t):
-    """
-    Tophat function, takes in an array of discrete data points
-    """
-    values = []
-    for i in range(len(t)):
-        if t[i]>=-1 and t[i]<=1:
-            h = 1
-        else:
-            h = 0
-        values.append(h)
-    return values
-
-N = 100
-
-sample_x = np.linspace(-5,5,N)
-dt = (max(sample_x)-min(sample_x))/N
-array = gaussian(sample_x)
-
-fourier = np.fft.fft(array)
-shift = np.abs(np.fft.fftshift(fourier)) * 1/np.sqrt(N)
-
-plt.plot(sample_x,gaussian(sample_x),label = 'original')
-plt.plot(sample_x,shift)
-plt.legend()
-
-plt.figure()
-tophat = h(sample_x)
-tophat_fourier= np.fft.fft(tophat)
-shift = np.fft.fftshift(tophat_fourier) * 1/np.sqrt(N)
-
-plt.plot(sample_x,h(sample_x),label = 'original')
-plt.plot(sample_x,shift)
-plt.legend()
-
-#print(np.fft.fftfreq(tophat_fourier,2))
-
 

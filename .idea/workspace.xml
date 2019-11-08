@@ -2,13 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3359f370-4a2f-44a2-9978-542645c65eac" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assignment/TODO.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/TODO.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assignment/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/README.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assignment/TODO.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assignment/five_random.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/five_random.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assignment/four_FFT.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/four_FFT.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assignment/one_Floating_Point.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/one_Floating_Point.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assignment/three_Interpolation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/three_Interpolation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assignment/two_Crout.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/two_Crout.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assignment/two_Matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/Assignment/two_Matrices.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -65,7 +67,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.two_Crout">
+  <component name="RunManager" selected="Python.four_FFT">
     <configuration name="1_floaing_point" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Computational Physics" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -80,28 +82,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Assignment/1_floaing_point.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="five_random" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="Computational Physics" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Assignment" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Assignment/five_random.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -125,7 +105,7 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Assignment/four_FFT.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -146,6 +126,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Assignment/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="three_Interpolation" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Computational Physics" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Assignment" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Assignment/three_Interpolation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -178,11 +180,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.four_FFT" />
+        <item itemvalue="Python.three_Interpolation" />
         <item itemvalue="Python.two_Crout" />
         <item itemvalue="Python.1_floaing_point" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.five_random" />
-        <item itemvalue="Python.four_FFT" />
       </list>
     </recent_temporary>
   </component>
@@ -200,6 +202,7 @@
       <workItem from="1572112413125" duration="541000" />
       <workItem from="1572517618159" duration="1208000" />
       <workItem from="1572911541826" duration="1301000" />
+      <workItem from="1573233677261" duration="2256000" />
     </task>
     <servers />
   </component>
@@ -234,20 +237,6 @@
     </option>
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Assignment/two_Crout.py</url>
-          <line>49</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Assignment/two_Crout.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="random_comp_x" />
@@ -255,8 +244,9 @@
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/computational_physics$four_FFT.coverage" NAME="four_FFT Coverage Results" MODIFIED="1572111827180" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
-    <SUITE FILE_PATH="coverage/computational_physics$two_Crout.coverage" NAME="two_Crout Coverage Results" MODIFIED="1572912598173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
+    <SUITE FILE_PATH="coverage/computational_physics$three_Interpolation.coverage" NAME="three_Interpolation Coverage Results" MODIFIED="1573234614874" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
+    <SUITE FILE_PATH="coverage/computational_physics$four_FFT.coverage" NAME="four_FFT Coverage Results" MODIFIED="1573237644387" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
+    <SUITE FILE_PATH="coverage/computational_physics$two_Crout.coverage" NAME="two_Crout Coverage Results" MODIFIED="1573234202484" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
     <SUITE FILE_PATH="coverage/computational_physics$1_floaing_point.coverage" NAME="1_floaing_point Coverage Results" MODIFIED="1572911573537" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
   </component>
 </project>

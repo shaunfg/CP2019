@@ -10,9 +10,8 @@ from functools import reduce
 
 def Crout(matrix,det = True):
     """
-    Applies Crout's algorithm to decompoase the matrix into lower and upper
+    Applies Crout's algorithm to decompose the matrix into lower and upper
         matrices
-    
     ----------
     Parameters:
     ----------
@@ -57,22 +56,19 @@ def Crout(matrix,det = True):
     
     print("a) Original Matrix \n{}\n\nLower Matrix \n{}\n\nUpper Matrix \n{}\n".format(np.mat(A),np.mat(lower),
                                                                                         np.mat(upper)))
-    
     print("Combined Matrix\n{}\n".format(np.mat(output)))
     
     if det == True:
-        
         # Multiplies all the elements in the diagonal of the matrix. 
         det_lower = reduce(lambda x, y: x*y, [lower[i][i]  for i in range(len(lower))])
         det_upper = reduce(lambda x, y: x*y, [upper[i][i]  for i in range(len(upper))])
         
         det_A = det_lower*det_upper
-        
+
         print("b) Det(Lower) = {}, Det(Upper) = {}, Det(A) = {}, Floating point error = {}\n".format(det_lower,det_upper,det_A,
                                                                                          det_A - det_lower*det_upper))
     else:
         pass
-    
     
     return lower,upper
 
@@ -88,13 +84,9 @@ def Forward_Backward(lower,upper,B = None):
         variables we solve for and b is a vector of constants.
     
     First, let y = (Ux), so:
-    
         L(Ux) = L(y) = b
-        
-    and solve for y, then 
-    
+    and solve for y, then :
         y = Ux
-    
     and solve for x.
     -----------
     Parameters:
@@ -124,10 +116,9 @@ def Forward_Backward(lower,upper,B = None):
         x_values[i] = (y_values[i] - rest_sum) / U[i][i]
 
     print("c)d) Value of x = {}\n".format(x_values))
-    
     return x_values
 
-def Inverse(matrix,lower,upper):
+def Inverse(lower,upper):
     """
     Finds the inverse of the matrix, by finding inverse of the upper and lower,
         and multiplying the result of the two, as shown: 
@@ -142,6 +133,7 @@ def Inverse(matrix,lower,upper):
     lower: lower matrix
     upper: upper matrix    
     """
+    # Finds inverse of lower and upper matrices.
     U_inverse = np.linalg.inv(upper)
     L_inverse = np.linalg.inv(lower)
     
@@ -149,12 +141,13 @@ def Inverse(matrix,lower,upper):
     inverse_mat = np.matmul(U_inverse,L_inverse)
 
     print("e) Inversed Matrix\n",inverse_mat)
-    
+
+    # Rounded values for appropriate printing
 #    rounded_values = [list(np.round(inverse_mat[i],3)) for i in range(len(inverse_mat))]
 #    print(np.mat(rounded_values))
     
 if __name__ == "__main__":
-#    mat_b = [[5,4,1],[10,9,4],[10,13,15]]
+
     mat_b = [[3,1,0,0,0],
              [3,9,4,0,0],
              [0,9,20,10,0],
@@ -162,7 +155,8 @@ if __name__ == "__main__":
              [0,0,0,-55,61]]
     
     B = [2,5,-4,8,9]
-    
+
+    # Runs all the functions
     lower_b, upper_b = Crout(mat_b,det = True)
     Forward_Backward(lower_b,upper_b,B)
-    Inverse(mat_b,lower_b,upper_b)
+    Inverse(lower_b,upper_b)

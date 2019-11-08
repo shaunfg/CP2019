@@ -59,20 +59,21 @@ def Transformation():
     transformation = np.arcsin(random_variables) * 2
     
     elapsed_time = timeit.default_timer() - start_time
- 
+
+    # Create sample data set to veriy hist follows PDF
     verify_x = np.linspace(0,np.pi,100)
-    
+
     # Plots the histogram of distribution, and PDF to verify.
-    plt.figure()    
-    heights, bins, patches = plt.hist(transformation,bins = 50,
+    plt.figure()
+    heights, b, p = plt.hist(transformation,bins = 50,
                                       label = "Generated points")
     plt.plot(verify_x, 1/2 * np.cos(verify_x/2) * 2 * heights[0],
              label = "PDF")
     plt.title("Histogram of random points using transformation method")
     plt.legend()
+
     return elapsed_time
-    
-    
+
 #%% Rejection Method
 
 def Rejection_Method(PDF_function,comparison_function, x_lim,title,scatter):
@@ -135,45 +136,42 @@ def Rejection_Method(PDF_function,comparison_function, x_lim,title,scatter):
         
     elapsed_time = timeit.default_timer() - start_time
 
-
-    plt.figure()
-
+    # Plotting Parameters
+    N_plots = len(x_values)
+    sample_x = np.linspace(0,np.pi,1000)
+    verify_x = np.linspace(0,x_lim,100)
 
     # Plot graphs to display results
-    
-    # Reduce on computation time
-    N_plots = len(x_values)
-
     fig,(ax1,ax2,ax3) = plt.subplots(3,1,figsize=(7,13))
-    
-    sample_x = np.linspace(0,np.pi,1000)
 
+    # Scatter plot
     ax1.plot(x_values[:N_plots],y_values[:N_plots],'o',ms = 0.1,label = "Accepted")
     ax1.plot(x_values_rejected[:N_plots],y_values_rejected[:N_plots],'o',
              ms = 0.1,label = "Rejected")
-    ax1.legend(markerscale = 50)
-    
-    heights,bins,patched = ax3.hist(x_values,bins = 100,
-                                    label = "Rejection Generated Points")     
+
+    # Comparison Functions
+    ax2.plot(verify_x,comparison_function(verify_x),label = 'Comparison')
+    ax2.plot(verify_x,PDF_function(verify_x),label = 'Original')
+
+    # Histogram of random data set
+    heights,b,p = ax3.hist(x_values,bins = 100,
+                                    label = "Rejection Generated Points")
     ax3.plot(sample_x,PDF_function(sample_x)*heights[0] *np.pi/2,
              label = "PDF")
     ax3.plot(sample_x,comparison_function(sample_x)*heights[0] *np.pi/2,
              label = "Comparison")
-#    ax3.plot(sample_x,comparison_function(sample_x)*heights[0] *np.pi/2,
-#             label = "PDF")    
-    verify_x = np.linspace(0,x_lim,100)
-    ax2.plot(verify_x,comparison_function(verify_x),label = 'Comparison')
-    ax2.plot(verify_x,PDF_function(verify_x),label = 'Original')
 
+    # Plot formatting
     ax1.set_title("Scatter plot for {} function".format(title))
-    ax3.set_title("Histogram of random points using {}".format(title))
     ax2.set_title("PDF vs Comparison Function")
-    ax3.legend()
+    ax3.set_title("Histogram of random points using {}".format(title))
+
+    ax1.legend(markerscale = 50)
     ax2.legend()
-    
-    
+    ax3.legend()
+
+    # Calculate efficiency of said comparison function
     Efficiency = len(x_values)/ (len(x_values_rejected)+len(x_values)) * 100
-    
     print("Efficiency of operation for {} = {:.2f}%".format(title,Efficiency))
 
     return elapsed_time
@@ -189,9 +187,6 @@ def func_comparison_example(x):
 # Probability density function 
 def PDF(x):
     return 2/np.pi * np.cos(x/2)**2
-
-
-
     
 if __name__ == "__main__":
     """
@@ -219,23 +214,24 @@ if __name__ == "__main__":
     comparison_type = "uniform comparison"
     elapsed_uni = Rejection_Method(PDF,func_uniform,x_lim,
                                               comparison_type,True)
-    
+
+
+
     # Calcullates ratio of rejection methods to transformation methods
     ratio_uni = elapsed_uni/elapsed_transformation
     ratio_cos = elapsed_cos/elapsed_transformation
 
+    # Display Results
     print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
             ratio_cos,"cos comparison"))
-    
     print("Rejection Method is {:.2f} times slower than transformation for {}\n".format(
             ratio_uni,"uniform comparison"))
-    
     print("cos comparison is x{:.2f} times faster than uniform comparison".format(
             elapsed_cos/elapsed_uni))
     plt.show()
-    
+
+    # Notice
     print("Printed results and efficiencies shown before plots")    
-    # Display results
 
     
     
