@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # For loop to test all float types.
     for float_type in [np.float32,np.float64,np.longdouble]:
         machineEps_check(float_type)
-        
+    print("      * Note, np.longdouble is padded to 128 bits on mac\n")   
     print("----------- Theoretical Machine Epsilon ------------\n")
 
     for float_type in ["32bit","64bit","extended"]:

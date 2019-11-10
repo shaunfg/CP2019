@@ -112,7 +112,7 @@ def Cubic_Spline(x,x_i,y_i,title):
     For example, if x = 3.5, out of x_i = [1,2,3,4,5], we pick x_i = {3,4} 
         in order to perform the interpolations.
         
-        orif x = 3, we pick x_i = {3,4} also. 
+        or if x = 3, we pick x_i = {3,4} also. 
     
     ----------
     Parameters:
@@ -124,7 +124,6 @@ def Cubic_Spline(x,x_i,y_i,title):
     
     """
     
-        # range to -1 as goes from i to i+1
     # Calculates all the variables in the cubic spline equation
     def Interpolate(xi_bottom,xi_top,x,f_dash):
         # Calculates the coefficients A,B,C,D

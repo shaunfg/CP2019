@@ -11,8 +11,10 @@
 ##########
 
 - Each question is split into a different python file
+
 - Each question section (i),(ii),... is made into a function [CODING STYLE]
 - These functions are run at the end of the code, after "if __name__ ==..."
+	- Just run the code to produce the results
 
 - Python was used as it is the most readable and easiest to understand language. 
  

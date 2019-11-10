@@ -191,9 +191,8 @@ def PDF(x):
 if __name__ == "__main__":
     """
     Start times were returned from transformation and rejection method 
-        function, so that only the variable computation time would be
+        functions, so that only the variable computation time would be
         considered. 
-        
     """
     
     # Set limit for x range    
@@ -216,8 +215,7 @@ if __name__ == "__main__":
                                               comparison_type,True)
 
 
-
-    # Calcullates ratio of rejection methods to transformation methods
+    # Calculates ratio of rejection methods to transformation methods
     ratio_uni = elapsed_uni/elapsed_transformation
     ratio_cos = elapsed_cos/elapsed_transformation
 

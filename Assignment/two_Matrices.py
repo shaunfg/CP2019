@@ -48,6 +48,7 @@ def Crout(matrix,det = True):
             elif i > j:
                 rest_sum = np.sum([lower[i][k] * upper[k][j] for k in range(i)])
                 lower[i][j] = (A[i][j] - rest_sum)/ (upper[j][j])
+
                 output[i][j] = lower[i][j]
 
             else:
