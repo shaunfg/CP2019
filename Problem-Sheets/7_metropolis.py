@@ -34,27 +34,28 @@ def Metropolis(PDF):
     for y in range(1000):
         # Sample random x
         gauss_samples = Gaussian_gen(x)
-#        print(x,gauss_samples)
         
-    
         # Picks random value near input x
         x_dash = random.choice(gauss_samples)
-        
-#            print(x,x_dash)
+
         if PDF(x_dash,x) >= PDF(x,x):
-            p = 1    
+            p = 1
+            x = x_dash
         else:
             p = PDF(x_dash,x)/PDF(x,x)
-            x = x_dash
+            
             
         p_values.append(p)
         x_values.append(x_dash)
     
+     
     # Shows that the points sampled, are very close to the that mean value
     # and hence increases  efficiency! 
     plt.hist(p_values,bins = 30)
     plt.figure()
     plt.hist(x_values,bins = 30)
+    
+    print(x_values)
         
         
     
