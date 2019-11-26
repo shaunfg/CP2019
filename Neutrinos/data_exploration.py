@@ -142,7 +142,6 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
         x_3_last = x_3
         x_3 = _find_next_point(random_x, random_y)
         
-        print(x_3)
         # Check for negative curvature
         if NLL([x_3],measured_data)[0] > all(random_y):
             warnings.warn("Interval has positive & negative curvature", Warning) 
@@ -171,49 +170,91 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
             # Calculates the f(x) of four x values
             print(measured_data)
             random_y = NLL(np.array(random_x),measured_data)
-        
-    return
+    min_y_value = NLL([x_3],measured_data)[0]
+
+
+    return x_3,min_y_value
+
+def Error_abs_addition(thetas,NLL_values, min_theta):
+    """
+    Finds error by +/- 0.5, on the first minimum. 
+    """
+    comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
+    check = comparison_df.loc[(comparison_df.Thetas < 2 * min_theta)]
+
+    value = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_theta))]
+    min_NLL = value.NLL.values[0]
+    theta_plus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL+0.5))]
+    theta_minus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL-0.5))]
+    
+    theta_plus = theta_plus_row.Thetas.values[0]
+    theta_minus = theta_minus_row.Thetas.values[0]
+
+    std_dev = (theta_plus - theta_minus) / 2
+    
+    return std_dev
 
     
 if __name__ == "__main__":    
     data = read_data("data.txt")
 #    data = read_data("chris_data.txt")
-    data["oscillated_rate"].hist(bins = 50)
+    
+    #  Plot hist
+#    data["oscillated_rate"].hist(bins = 50)
     
     # Guess Parameters
-    del_m = 2.928e-3 # adjusted to fit code data better
+    del_m = 2.915e-3 # adjusted to fit code data better
     L = 295
     
     # Energies and Theta values to vary
     energies = np.array(data['energy'].tolist())
-    thetas = np.linspace(0,np.pi,1000)
+    thetas = np.arange(0,np.pi,0.002)
     oscillated_rates = np.array(data["oscillated_rate"].tolist())
     unoscillated = np.array(data["unoscillated_rate"].tolist())
     predicted = oscillated_prediction([np.pi/4])
     
-    Parabolic_minimise(oscillated_rates,guess_x = [0.2,0.5,1])
-
-    
     
     NLL_array = NLL(thetas,oscillated_rates)
-
-    Parabolic_minimise(oscillated_rates,guess_x = [2.0,2.5,2.3])
-
-    # Measured oscillated data
-    plt.figure(figsize = (8,5))
-    plt.bar(energies,oscillated_rates,width = 0.05,alpha = 0.5)
-    plt.xlabel("Energies/GeV")
-    plt.ylabel("Rates")
-    plt.title("Measured Data after oscillation")
-    plt.plot(energies,predicted[0])
-     
-    # Unoscillated simulated data 
-    plt.figure()
-    plt.bar(energies,unoscillated,width = 0.05)
-    plt.xlabel("Energies/GeV")
-    plt.ylabel("Rates")
-    plt.title("unoscillated")
+    min_x,min_y = Parabolic_minimise(oscillated_rates,guess_x = [0.2,0.5,1])
+    print(min_x,min_y)
     
+    comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_array})
+    check = comparison_df.loc[(comparison_df.NLL < 87.5) & (comparison_df.Thetas <2)]
+    
+    std_theta = Error_abs_addition(thetas,NLL_array,min_x)
+#    plt.figure()
+#    print(check)
+#    plt.plot(check.Thetas,check.NLL)
+    
+    # First minimum
+
+
+#    NLL_value = comparison_df.loc[(comparison_df.NLL < min_y + 0.1) & (comparison_df.Thetas < 2)]
+    
+
+
+#    print(comparison_df.loc[(comparison_df.NLL < min_1 + 0.5) | (comparison_df.NLL > min_1 - 0.5)])
+    
+    # Second minimum
+#    Parabolic_minimise(oscillated_rates,guess_x = [2.0,2.5,2.3])
+
+
+# PLOTTT    
+    # Measured oscillated data
+#    plt.figure(figsize = (8,5))
+#    plt.bar(energies,oscillated_rates,width = 0.05,alpha = 0.5)
+#    plt.xlabel("Energies/GeV")
+#    plt.ylabel("Rates")
+#    plt.title("Measured Data after oscillation")
+#    plt.plot(energies,predicted[0])
+#     
+#    # Unoscillated simulated data 
+#    plt.figure()
+#    plt.bar(energies,unoscillated,width = 0.05)
+#    plt.xlabel("Energies/GeV")
+#    plt.ylabel("Rates")
+#    plt.title("unoscillated")
+#    
     # NLL against theta    
     plt.figure()
     plt.xlabel("Thetas")
