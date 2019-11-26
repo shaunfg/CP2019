@@ -170,37 +170,82 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
             # Calculates the f(x) of four x values
             print(measured_data)
             random_y = NLL(np.array(random_x),measured_data)
+    
+    
+    max_idx = np.argmax(random_y)
+    del random_x[max_idx]        
+    random_y = tuple(NLL(np.array(random_x),measured_data))
+    random_x = tuple(random_x)        
+    
+    
     min_y_value = NLL([x_3],measured_data)[0]
 
 
-    return x_3,min_y_value
+    return x_3,min_y_value,random_x,random_y
 
 def Error_abs_addition(thetas,NLL_values, min_theta):
     """
-    Finds error by +/- 0.5, on the first minimum. 
+    Finds error by +/- 0.5, on the first minimum for a parabolic fit 
     """
+    # Form pandas datraframe
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
+    # Localise to first minimum
     check = comparison_df.loc[(comparison_df.Thetas < 2 * min_theta)]
-
-    value = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_theta))]
-    min_NLL = value.NLL.values[0]
+    
+    # Find the minimum theta and NLL, on the parabolic fit 
+    min_values = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_theta))]
+    min_NLL = min_values.NLL.values[0]
+    # Find +/- 0.5 minimum of theta
     theta_plus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL+0.5))]
     theta_minus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL-0.5))]
     
+    # Obtain +/- value 
     theta_plus = theta_plus_row.Thetas.values[0]
     theta_minus = theta_minus_row.Thetas.values[0]
 
+    # Calculate standard deviation by half the range. 
     std_dev = (theta_plus - theta_minus) / 2
     
     return std_dev
+
+def Error_Curvature(min_theta,unoscillated_rates,measured_events,del_mass_square,L,E
+                    ,parabolic_x,parabolic_y):
+    
+    t = min_theta 
+#    print(t)
+    
+    A = np.sin(1.267 * del_mass_square * L  / E) **2
+        
+    P = 1 - np.sin(2*t)**2 * A
+    P_1 = - 4*np.sin(2*t)*np.cos(2*t) * A
+    P_2 = - (8* (np.cos(2*t)**2 - np.sin(2*t)**2) * A)
+    
+    l = P * unoscillated_rates
+    l_1 = P_1 * unoscillated_rates
+    l_2 = P_2 * unoscillated_rates
+   
+    NLL_2 = l_2 - measured_events * (l * l_2 - l_1 **2) / l**2 * 1/ np.log(10)
+    
+    print(sum(NLL_2))
+    
+    x_0,x_1,x_2 = (0,0.800,1.498) #parabolic_x
+    y_0,y_1,y_2 = (891.498660,85.945698,873.129253) #parabolic_y
+    
+    d = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
+    c_0 = (2)*(x_2-x_1)
+    c_1 = (2)*(x_0-x_2)
+    c_2 = (2)*(x_1-x_0)
+    
+    NLL_2_fit = -1/d * (c_0 * y_0 + c_1 * y_1 + c_2 * y_2)
+    print(NLL_2_fit)
+    return NLL_2
 
     
 if __name__ == "__main__":    
     data = read_data("data.txt")
 #    data = read_data("chris_data.txt")
     
-    #  Plot hist
-#    data["oscillated_rate"].hist(bins = 50)
+
     
     # Guess Parameters
     del_m = 2.915e-3 # adjusted to fit code data better
@@ -209,40 +254,31 @@ if __name__ == "__main__":
     # Energies and Theta values to vary
     energies = np.array(data['energy'].tolist())
     thetas = np.arange(0,np.pi,0.002)
-    oscillated_rates = np.array(data["oscillated_rate"].tolist())
-    unoscillated = np.array(data["unoscillated_rate"].tolist())
+    oscillated = np.array(data["oscillated_rate"].tolist()) # measured
+    unoscillated = np.array(data["unoscillated_rate"].tolist()) # simulated
     predicted = oscillated_prediction([np.pi/4])
     
     
-    NLL_array = NLL(thetas,oscillated_rates)
-    min_x,min_y = Parabolic_minimise(oscillated_rates,guess_x = [0.2,0.5,1])
-    print(min_x,min_y)
+    NLL_array = NLL(thetas,oscillated)
+    min_x,min_y,vals_x,vals_y = Parabolic_minimise(oscillated,guess_x = [0.2,0.5,1])
+#    print(min_x,min_y)
     
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_array})
     check = comparison_df.loc[(comparison_df.NLL < 87.5) & (comparison_df.Thetas <2)]
     
     std_theta = Error_abs_addition(thetas,NLL_array,min_x)
-#    plt.figure()
-#    print(check)
-#    plt.plot(check.Thetas,check.NLL)
+
+#    Parabolic_minimise(oscillated,guess_x = [2.0,2.5,2.3])
+    Error_Curvature(min_x,unoscillated,oscillated,del_m,L,energies,vals_x,vals_y)
+
+# ===================================PLOT======================================
     
-    # First minimum
-
-
-#    NLL_value = comparison_df.loc[(comparison_df.NLL < min_y + 0.1) & (comparison_df.Thetas < 2)]
+#    # Plot hist
+#    data["oscillated_rate"].hist(bins = 50)
     
-
-
-#    print(comparison_df.loc[(comparison_df.NLL < min_1 + 0.5) | (comparison_df.NLL > min_1 - 0.5)])
-    
-    # Second minimum
-#    Parabolic_minimise(oscillated_rates,guess_x = [2.0,2.5,2.3])
-
-
-# PLOTTT    
-    # Measured oscillated data
+#    # Measured oscillated data
 #    plt.figure(figsize = (8,5))
-#    plt.bar(energies,oscillated_rates,width = 0.05,alpha = 0.5)
+#    plt.bar(energies,oscillated,width = 0.05,alpha = 0.5)
 #    plt.xlabel("Energies/GeV")
 #    plt.ylabel("Rates")
 #    plt.title("Measured Data after oscillation")
