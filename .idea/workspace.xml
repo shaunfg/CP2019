@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3359f370-4a2f-44a2-9978-542645c65eac" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/Computational Physics.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Computational Physics.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Neutrinos/data_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/data_exploration.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Neutrinos/parabolic.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/parabolic.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -26,6 +27,31 @@
     <expand />
     <select />
   </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Neutrinos/data_exploration.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="214">
+              <caret line="452" lean-forward="true" selection-start-line="452" selection-end-line="452" />
+              <folding>
+                <element signature="e#416#906#0" />
+                <element signature="e#970#1074#0" />
+                <element signature="e#1119#1959#0" />
+                <element signature="e#1227#1322#0" />
+                <element signature="e#1989#2482#0" />
+                <element signature="e#2550#2786#1" />
+                <element signature="e#5596#6575#0" />
+                <element signature="e#6665#8222#0" />
+                <element signature="e#8263#9083#0" />
+                <element signature="e#9306#9768#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -33,16 +59,70 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>del_m</find>
+      <find>Parabolic_minimise</find>
+      <find>oscillated_prediction</find>
+      <find>NLL(</find>
+      <find>NLL_two</find>
+      <find>tuple(</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>Parabolic_theta</replace>
+      <replace>theta</replace>
+      <replace>NLL(np.array(random_x),measured_data,del_m)</replace>
+      <replace>NLL_two(</replace>
+      <replace>NLL_two(theta_IC,random_x, measured_data)</replace>
+    </replaceStrings>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/Neutrinos/data_exploration.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="358" />
+    <option name="y" value="-26" />
+    <option name="width" value="1400" />
+    <option name="height" value="1000" />
+  </component>
   <component name="ProjectId" id="1SkdxScNGxmGDPOXKI67Ym9mIBM" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="Computational Physics" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Computational Physics" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Computational Physics" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Computational Physics" type="462c0819:PsiDirectoryNode" />
+              <item name="Neutrinos" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -61,18 +141,14 @@
       <module name="Computational Physics" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Neutrinos" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Neutrinos/data_exploration.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -170,10 +246,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.data_exploration" />
+        <item itemvalue="Python.data_exploration" />
         <item itemvalue="Python.parabolic" />
         <item itemvalue="Python.four_FFT" />
         <item itemvalue="Python.three_Interpolation" />
-        <item itemvalue="Python.two_Crout" />
       </list>
     </recent_temporary>
   </component>
@@ -199,6 +275,29 @@
     </task>
     <servers />
   </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.24973656" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info active="true" anchor="bottom" id="Python Console" visible="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32936078" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3997833" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
@@ -208,6 +307,12 @@
         <entry key="MAIN">
           <value>
             <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
               <option name="COLUMN_ORDER" />
             </State>
           </value>
@@ -273,11 +378,6 @@
           <option name="timeStamp" value="41" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="42" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/parabolic.py</url>
           <line>69</line>
           <option name="timeStamp" value="43" />
@@ -294,17 +394,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>57</line>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>195</line>
+          <line>199</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>190</line>
+          <line>194</line>
           <option name="timeStamp" value="49" />
         </line-breakpoint>
       </breakpoints>
@@ -323,5 +418,26 @@
     <SUITE FILE_PATH="coverage/computational_physics$parabolic.coverage" NAME="parabolic Coverage Results" MODIFIED="1574722549990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Neutrinos" />
     <SUITE FILE_PATH="coverage/computational_physics$1_floaing_point.coverage" NAME="1_floaing_point Coverage Results" MODIFIED="1572911573537" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
     <SUITE FILE_PATH="coverage/computational_physics$data_exploration.coverage" NAME="data_exploration Coverage Results" MODIFIED="1574765696793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Neutrinos" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/Neutrinos/data_exploration.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="452" lean-forward="true" selection-start-line="452" selection-end-line="452" />
+          <folding>
+            <element signature="e#416#906#0" />
+            <element signature="e#970#1074#0" />
+            <element signature="e#1119#1959#0" />
+            <element signature="e#1227#1322#0" />
+            <element signature="e#1989#2482#0" />
+            <element signature="e#2550#2786#1" />
+            <element signature="e#5596#6575#0" />
+            <element signature="e#6665#8222#0" />
+            <element signature="e#8263#9083#0" />
+            <element signature="e#9306#9768#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>
