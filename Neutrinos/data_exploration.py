@@ -177,8 +177,7 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
     random_y = tuple(NLL(np.array(random_x),measured_data))
     random_x = tuple(random_x)        
     
-    min_y_value = NLL([x_3],measured_data)[0]
-
+#    min_y_value = NLL([x_3],measured_data)[0]
 
     return random_x,random_y
 
