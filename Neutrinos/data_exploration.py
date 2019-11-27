@@ -11,6 +11,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
+from scipy.interpolate import lagrange
+from scipy.interpolate import interp1d
+from numpy.polynomial.polynomial import Polynomial
 #from parabolic import Parabolic_minimise
 
 
@@ -177,24 +180,24 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
     random_y = tuple(NLL(np.array(random_x),measured_data))
     random_x = tuple(random_x)        
     
-    
     min_y_value = NLL([x_3],measured_data)[0]
 
 
     return x_3,min_y_value,random_x,random_y
 
-def Error_abs_addition(thetas,NLL_values, min_theta):
+def Error_abs_addition(thetas,NLL_values, min_theta,min_NLL,above_min):
     """
     Finds error by +/- 0.5, on the first minimum for a parabolic fit 
     """
     # Form pandas datraframe
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
     # Localise to first minimum
-    check = comparison_df.loc[(comparison_df.Thetas < 2 * min_theta)]
+    check = comparison_df.loc[(comparison_df.NLL < min_NLL + above_min) & (comparison_df.Thetas < 1.5)]
     
-    # Find the minimum theta and NLL, on the parabolic fit 
-    min_values = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_theta))]
-    min_NLL = min_values.NLL.values[0]
+    func= interp1d(check["NLL"],check["Thetas"]) # Flip to inverse function
+    
+    print(func(min_NLL + 0.5))
+
     # Find +/- 0.5 minimum of theta
     theta_plus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL+0.5))]
     theta_minus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL-0.5))]
@@ -204,11 +207,11 @@ def Error_abs_addition(thetas,NLL_values, min_theta):
     theta_minus = theta_minus_row.Thetas.values[0]
 
     # Calculate standard deviation by half the range. 
-    std_dev = (theta_plus - theta_minus) / 2
+    std_dev = (theta_plus - theta_minus)  / 2
     
     return std_dev
 
-def Error_Curvature(min_theta,unoscillated_rates,measured_events,del_mass_square,L,E
+def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mass_square,L,E
                     ,parabolic_x,parabolic_y):
     
     t = min_theta 
@@ -227,25 +230,35 @@ def Error_Curvature(min_theta,unoscillated_rates,measured_events,del_mass_square
     NLL_2 = l_2 - measured_events * (l * l_2 - l_1 **2) / l**2 * 1/ np.log(10)
     
     print(sum(NLL_2))
+
+    x = np.array([1.014,0.800,1.498])#parabolic_x# 
+    y = x**2
+
+    x = parabolic_x# 
+    y = parabolic_y
     
-    x_0,x_1,x_2 = (0,0.800,1.498) #parabolic_x
-    y_0,y_1,y_2 = (891.498660,85.945698,873.129253) #parabolic_y
+    poly = lagrange(x,y)
+    coefficients = Polynomial(poly).coef
+    coefficients[-1] = coefficients[-1] - min_NLL - 0.5
+    quadratic = np.poly1d(coefficients)
+    roots = np.roots(coefficients)
     
-    d = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
-    c_0 = (2)*(x_2-x_1)
-    c_1 = (2)*(x_0-x_2)
-    c_2 = (2)*(x_1-x_0)
+    print((roots[0] - roots[1])/2)
+    print(coefficients)
     
-    NLL_2_fit = -1/d * (c_0 * y_0 + c_1 * y_1 + c_2 * y_2)
-    print(NLL_2_fit)
-    return NLL_2
+    
+#    d = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
+#    c_0 = (2)*(x_2-x_1)
+#    c_1 = (2)*(x_0-x_2)
+#    c_2 = (2)*(x_1-x_0)
+#    
+#    NLL_2_fit = -1/d * (c_0 * y_0 + c_1 * y_1 + c_2 * y_2)
+    return NLL_2,coefficients
 
     
 if __name__ == "__main__":    
     data = read_data("data.txt")
 #    data = read_data("chris_data.txt")
-    
-
     
     # Guess Parameters
     del_m = 2.915e-3 # adjusted to fit code data better
@@ -265,11 +278,16 @@ if __name__ == "__main__":
     
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_array})
     check = comparison_df.loc[(comparison_df.NLL < 87.5) & (comparison_df.Thetas <2)]
+    min_values = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_x))]
+    min_NLL = min_values.NLL.values[0]
     
-    std_theta = Error_abs_addition(thetas,NLL_array,min_x)
+    std_theta = Error_abs_addition(thetas,NLL_array,min_x,min_NLL,0.7)
 
 #    Parabolic_minimise(oscillated,guess_x = [2.0,2.5,2.3])
-    Error_Curvature(min_x,unoscillated,oscillated,del_m,L,energies,vals_x,vals_y)
+    ab, coeff = Error_Curvature(min_x,min_NLL,unoscillated,oscillated,del_m,L,energies,vals_x,vals_y)
+
+    abc = np.poly1d(coeff)
+    samp_x = np.arange(0,1.5,0.01)
 
 # ===================================PLOT======================================
     
@@ -296,6 +314,7 @@ if __name__ == "__main__":
     plt.xlabel("Thetas")
     plt.ylabel("NLL")
     plt.plot(thetas, NLL_array)
+#    plt.plot(samp_x,abc(samp_x))
 
 
     
