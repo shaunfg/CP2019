@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3359f370-4a2f-44a2-9978-542645c65eac" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Computational Physics.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Computational Physics.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Neutrinos/data_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/data_exploration.py" afterDir="false" />
     </list>
@@ -32,19 +30,22 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Neutrinos/data_exploration.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="214">
-              <caret line="452" lean-forward="true" selection-start-line="452" selection-end-line="452" />
+            <state relative-caret-position="620">
+              <caret line="463" column="31" lean-forward="true" selection-start-line="463" selection-start-column="31" selection-end-line="463" selection-end-column="31" />
               <folding>
                 <element signature="e#416#906#0" />
                 <element signature="e#970#1074#0" />
                 <element signature="e#1119#1959#0" />
                 <element signature="e#1227#1322#0" />
                 <element signature="e#1989#2482#0" />
+                <element signature="e#2550#5518#0" />
                 <element signature="e#2550#2786#1" />
-                <element signature="e#5596#6575#0" />
+                <element signature="e#2838#3486#0" />
                 <element signature="e#6665#8222#0" />
                 <element signature="e#8263#9083#0" />
                 <element signature="e#9306#9768#0" />
+                <element signature="e#9930#12875#0" />
+                <element signature="e#8570#9218#0" />
               </folding>
             </state>
           </provider>
@@ -74,6 +75,7 @@
       <replace>NLL(np.array(random_x),measured_data,del_m)</replace>
       <replace>NLL_two(</replace>
       <replace>NLL_two(theta_IC,random_x, measured_data)</replace>
+      <replace>min_val_x</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -277,7 +279,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
       <window_info content_ui="combo" id="Project" order="0" weight="0.24973656" />
@@ -394,12 +395,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>199</line>
+          <line>197</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>194</line>
+          <line>192</line>
           <option name="timeStamp" value="49" />
         </line-breakpoint>
       </breakpoints>
@@ -422,19 +423,22 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Neutrinos/data_exploration.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="452" lean-forward="true" selection-start-line="452" selection-end-line="452" />
+        <state relative-caret-position="620">
+          <caret line="463" column="31" lean-forward="true" selection-start-line="463" selection-start-column="31" selection-end-line="463" selection-end-column="31" />
           <folding>
             <element signature="e#416#906#0" />
             <element signature="e#970#1074#0" />
             <element signature="e#1119#1959#0" />
             <element signature="e#1227#1322#0" />
             <element signature="e#1989#2482#0" />
+            <element signature="e#2550#5518#0" />
             <element signature="e#2550#2786#1" />
-            <element signature="e#5596#6575#0" />
+            <element signature="e#2838#3486#0" />
             <element signature="e#6665#8222#0" />
             <element signature="e#8263#9083#0" />
             <element signature="e#9306#9768#0" />
+            <element signature="e#9930#12875#0" />
+            <element signature="e#8570#9218#0" />
           </folding>
         </state>
       </provider>

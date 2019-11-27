@@ -183,29 +183,29 @@ def Parabolic_theta(measured_data,del_m= 2.915e-3,guess_x = [-2.2,0.1,2]):
 
 #%% Finding Errors on minimum
 
-def Error_abs_addition(thetas,NLL_values, min_theta,min_NLL,above_min):
+def Error_abs_addition(variables,NLL_values, min_val_x,min_NLL,above_min):
     """
     Finds error by +/- 0.5, on the first minimum for a parabolic fit.
     
     Points are linearly interpolated. 
     
-    min_theta,min_NLL from parabolic minmised fit. 
+    min_val_x,min_NLL from parabolic minmised fit.
     """
     # Form pandas datraframe
-    comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
+    comparison_df = pd.DataFrame({"Var":variables,"NLL":NLL_values})
     # Localise to first minimum
-    comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Thetas < 1.5)]
+    comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Var < 1.5)]
     
     # Finds LHS and RHS of the minimum
-    LHS = comparison_df.loc[comparison_df.Thetas < min_theta]
-    RHS = comparison_df.loc[comparison_df.Thetas > min_theta]
+    LHS = comparison_df.loc[comparison_df.Var < min_val_x]
+    RHS = comparison_df.loc[comparison_df.Var > min_val_x]
     
     # Interpolate to find continous value
-    func_LHS = interp1d(LHS["NLL"],LHS["Thetas"]) # Flipped to inverse function
-    func_RHS = interp1d(RHS["NLL"],RHS["Thetas"]) # Flipped to inverse function
+    func_LHS = interp1d(LHS["NLL"],LHS["Var"]) # Flipped to inverse function
+    func_RHS = interp1d(RHS["NLL"],RHS["Var"]) # Flipped to inverse function
 
     #Takes maximum value
-    values = np.array([func_LHS(min_NLL + 0.5)-min_theta,func_RHS(min_NLL + 0.5)-min_theta])
+    values = np.array([func_LHS(min_NLL + 0.5)-min_val_x,func_RHS(min_NLL + 0.5)-min_val_x])
     std_dev = max(abs(values))
         
     return std_dev
@@ -219,13 +219,13 @@ def Error_Curvature(unoscillated_rates,measured_events,IC,parabolic_x,parabolic_
     """
     
     # Find minimum theta and minimum NLL
-    min_theta = min(parabolic_x)
+    min_val = min(parabolic_x)
     min_NLL = min(parabolic_y)
     
     del_mass_square,L,E = IC
     
     # Calculate second derivative of theoretical NLL value
-    t = min_theta 
+    t = min_val
     A = np.sin(1.267 * del_mass_square * L  / E) **2
     
     # Calculate probabilities    
@@ -406,7 +406,6 @@ def Parabolic_mass(measured_data,theta_IC, guess_m):
 
     return random_x
 
-
 def Univariate(theta_IC, measured_data, guess_m,guess_x):
     min_masses = Parabolic_mass(measured_data, theta_IC=theta_IC, guess_m=guess_m)
     min_thetas, min_NLLs = Parabolic_theta(measured_data=measured_data, del_m=min(min_masses), guess_x=guess_x)
@@ -430,7 +429,7 @@ if __name__ == "__main__":
     ICs = (del_m_square,L,energies)
     
     # Calculate NLL 
-    NLL_array = NLL(thetas,oscillated,del_m_square)
+    NLL_thetas = NLL(thetas,oscillated,del_m_square)
     
     # Parabolic Minimise
     vals_x,vals_y = Parabolic_theta(oscillated,guess_x = [0.2,0.5,1],del_m=del_m_square)
@@ -441,16 +440,22 @@ if __name__ == "__main__":
     print(min_theta_1D,"Check")
     
     # Calculate both errors, from +/- 0.5 and from difference in curvature
-    std_t_abs = Error_abs_addition(thetas,NLL_array,min_theta_1D,min_NLL_1D,0.7)
+    std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
     std_t_curv = Error_Curvature(unoscillated,oscillated,ICs,vals_x,vals_y)
 
     print(std_t_abs, std_t_curv)
 
     # Two dimensional minimisation
     theta = np.array([np.pi / 4])
+    masses = np.linspace(1e-3,3e-3,1000)
+    NLL_masses = NLL_two(theta,masses,oscillated)
+
     min_mass_2D,min_theta_2D = Univariate(theta,oscillated,[1e-3,2e-3,3e-3],guess_x =[0.2, 0.5, 1])
 
     print(min_mass_2D,min_theta_2D)
+
+    #TODO: OBTAIN ERROR
+    #TODO: Set convergence limit
 # ===================================PLOT======================================
     
 #    # Plot hist
@@ -475,7 +480,7 @@ if __name__ == "__main__":
     plt.figure()
     plt.xlabel("Thetas")
     plt.ylabel("NLL")
-    plt.plot(thetas, NLL_array)
+    plt.plot(thetas, NLL_thetas)
 #    plt.plot(samp_x,abc(samp_x))
 
 
