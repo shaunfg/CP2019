@@ -192,31 +192,29 @@ def Error_abs_addition(thetas,NLL_values, min_theta,min_NLL,above_min):
     # Form pandas datraframe
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
     # Localise to first minimum
-    check = comparison_df.loc[(comparison_df.NLL < min_NLL + above_min) & (comparison_df.Thetas < 1.5)]
+    comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Thetas < 1.5)]
     
-    func= interp1d(check["NLL"],check["Thetas"]) # Flip to inverse function
+    # Finds LHS and RHS of the minimum
+    LHS = comparison_df.loc[comparison_df.Thetas < min_theta]
+    RHS = comparison_df.loc[comparison_df.Thetas > min_theta]
     
-    print(func(min_NLL + 0.5))
+    # Interpolate to find continous value
+    func_LHS = interp1d(LHS["NLL"],LHS["Thetas"]) # Flipped to inverse function
+    func_RHS = interp1d(RHS["NLL"],RHS["Thetas"]) # Flipped to inverse function
 
-    # Find +/- 0.5 minimum of theta
-    theta_plus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL+0.5))]
-    theta_minus_row = check.loc[check.NLL == min(check.NLL, key=lambda x:abs(x-min_NLL-0.5))]
+    #Takes maximum value
+    values = np.array([func_LHS(min_NLL + 0.5)-min_theta,func_RHS(min_NLL + 0.5)-min_theta])
+    std_dev = max(abs(values))
     
-    # Obtain +/- value 
-    theta_plus = theta_plus_row.Thetas.values[0]
-    theta_minus = theta_minus_row.Thetas.values[0]
-
-    # Calculate standard deviation by half the range. 
-    std_dev = (theta_plus - theta_minus)  / 2
+    print(std_dev)
     
     return std_dev
 
 def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mass_square,L,E
                     ,parabolic_x,parabolic_y):
     
+    # Calculate second derivative of theoretical NLL value
     t = min_theta 
-#    print(t)
-    
     A = np.sin(1.267 * del_mass_square * L  / E) **2
         
     P = 1 - np.sin(2*t)**2 * A
@@ -229,23 +227,30 @@ def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mas
    
     NLL_2 = l_2 - measured_events * (l * l_2 - l_1 **2) / l**2 * 1/ np.log(10)
     
-    print(sum(NLL_2))
-
-    x = np.array([1.014,0.800,1.498])#parabolic_x# 
-    y = x**2
-
+    # Curvature is equal to NLL_2 = 2a
+    curvature_original = sum(NLL_2) /2
+    
+    # Calculate second derivative of Lagrange polynomial fit
+    # Based on the parabolic minimiser
     x = parabolic_x# 
     y = parabolic_y
     
     poly = lagrange(x,y)
     coefficients = Polynomial(poly).coef
+    
+    # Shift polynomial by 0.5 and solve for roots
     coefficients[-1] = coefficients[-1] - min_NLL - 0.5
-    quadratic = np.poly1d(coefficients)
     roots = np.roots(coefficients)
     
-    print((roots[0] - roots[1])/2)
-    print(coefficients)
+    curvature_fit = roots[0]
     
+    # Find difference in curvature value
+    curvature_del = curvature_original - curvature_fit
+    
+    # Just consider curvature, ax**2 = 0.5
+    std_theta = np.sqrt(0.5/curvature_del)
+    
+    print(std_theta,"CHRIS")
     
 #    d = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
 #    c_0 = (2)*(x_2-x_1)
