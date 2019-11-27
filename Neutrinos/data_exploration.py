@@ -96,13 +96,13 @@ def NLL(theta_values,data):
 
 def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
     """
-    generate f(x) from a set of x values
-    append the new x_3 value
+    generate f(x) from a set of x values,append the new x_3 value
+    
+    Parabolic minimiser is based on the intergral of the lagrange polynomial. 
     
     find f(x) with all four values
     save the smallest three values
     """
-
 
     def _find_next_point(x_list, y_list):
         """
@@ -162,10 +162,7 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
             
             #picks the 4 smallest values to carry on with
             random_x = [x_values[i] for i in indices][0:4]
-            random_y = [y_values[i] for i in indices][0:4]                        
-
-           # random_x = [random.uniform(min(random_x),max(random_x)) for x in range(4)]
-#            random_y = NLL(np.array(random_x))
+            random_y = [y_values[i] for i in indices][0:4]
 
         else:
             # Stores the next smallest value
@@ -183,11 +180,15 @@ def Parabolic_minimise(measured_data,guess_x = [-2.2,0.1,2]):
     min_y_value = NLL([x_3],measured_data)[0]
 
 
-    return x_3,min_y_value,random_x,random_y
+    return random_x,random_y
 
 def Error_abs_addition(thetas,NLL_values, min_theta,min_NLL,above_min):
     """
-    Finds error by +/- 0.5, on the first minimum for a parabolic fit 
+    Finds error by +/- 0.5, on the first minimum for a parabolic fit.
+    
+    Points are linearly interpolated. 
+    
+    min_theta,min_NLL from parabolic minmised fit. 
     """
     # Form pandas datraframe
     comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_values})
@@ -205,36 +206,48 @@ def Error_abs_addition(thetas,NLL_values, min_theta,min_NLL,above_min):
     #Takes maximum value
     values = np.array([func_LHS(min_NLL + 0.5)-min_theta,func_RHS(min_NLL + 0.5)-min_theta])
     std_dev = max(abs(values))
-    
-    print(std_dev)
-    
+        
     return std_dev
 
-def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mass_square,L,E
-                    ,parabolic_x,parabolic_y):
+def Error_Curvature(unoscillated_rates,measured_events,IC,parabolic_x,parabolic_y):
+    """
+    Calculates error by finding difference in second derivatives. 
+    
+    Params:
+        IC = tuple of del_mass_square,L,energies
+    """
+    
+    # Find minimum theta and minimum NLL
+    min_theta = min(parabolic_x)
+    min_NLL = min(parabolic_y)
+    
+    del_mass_square,L,E = IC
     
     # Calculate second derivative of theoretical NLL value
     t = min_theta 
     A = np.sin(1.267 * del_mass_square * L  / E) **2
-        
+    
+    # Calculate probabilities    
     P = 1 - np.sin(2*t)**2 * A
     P_1 = - 4*np.sin(2*t)*np.cos(2*t) * A
     P_2 = - (8* (np.cos(2*t)**2 - np.sin(2*t)**2) * A)
     
+    # Calculate rates 
     l = P * unoscillated_rates
     l_1 = P_1 * unoscillated_rates
     l_2 = P_2 * unoscillated_rates
    
+    # Calculate second dertivative
     NLL_2 = l_2 - measured_events * (l * l_2 - l_1 **2) / l**2 * 1/ np.log(10)
     
     # Curvature is equal to NLL_2 = 2a
     curvature_original = sum(NLL_2) /2
     
     # Calculate second derivative of Lagrange polynomial fit
-    # Based on the parabolic minimiser
     x = parabolic_x# 
     y = parabolic_y
     
+    # Based on the parabolic minimiser
     poly = lagrange(x,y)
     coefficients = Polynomial(poly).coef
     
@@ -242,6 +255,7 @@ def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mas
     coefficients[-1] = coefficients[-1] - min_NLL - 0.5
     roots = np.roots(coefficients)
     
+    # Curvature = a
     curvature_fit = roots[0]
     
     # Find difference in curvature value
@@ -250,15 +264,7 @@ def Error_Curvature(min_theta,min_NLL,unoscillated_rates,measured_events,del_mas
     # Just consider curvature, ax**2 = 0.5
     std_theta = np.sqrt(0.5/curvature_del)
     
-    print(std_theta,"CHRIS")
-    
-#    d = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
-#    c_0 = (2)*(x_2-x_1)
-#    c_1 = (2)*(x_0-x_2)
-#    c_2 = (2)*(x_1-x_0)
-#    
-#    NLL_2_fit = -1/d * (c_0 * y_0 + c_1 * y_1 + c_2 * y_2)
-    return NLL_2,coefficients
+    return std_theta
 
     
 if __name__ == "__main__":    
@@ -269,30 +275,31 @@ if __name__ == "__main__":
     del_m = 2.915e-3 # adjusted to fit code data better
     L = 295
     
-    # Energies and Theta values to vary
+    # Prepare lists to be used in calculations
     energies = np.array(data['energy'].tolist())
     thetas = np.arange(0,np.pi,0.002)
     oscillated = np.array(data["oscillated_rate"].tolist()) # measured
     unoscillated = np.array(data["unoscillated_rate"].tolist()) # simulated
     predicted = oscillated_prediction([np.pi/4])
+    ICs = (del_m,L,energies)
     
-    
+    # Calculate NLL 
     NLL_array = NLL(thetas,oscillated)
-    min_x,min_y,vals_x,vals_y = Parabolic_minimise(oscillated,guess_x = [0.2,0.5,1])
-#    print(min_x,min_y)
     
-    comparison_df = pd.DataFrame({"Thetas":thetas,"NLL":NLL_array})
-    check = comparison_df.loc[(comparison_df.NLL < 87.5) & (comparison_df.Thetas <2)]
-    min_values = check.loc[check.Thetas == min(check.Thetas, key=lambda x:abs(x-min_x))]
-    min_NLL = min_values.NLL.values[0]
+    # Parabolic Minimise
+    vals_x,vals_y = Parabolic_minimise(oscillated,guess_x = [0.2,0.5,1])
     
-    std_theta = Error_abs_addition(thetas,NLL_array,min_x,min_NLL,0.7)
+    # Minimums based on the parabolic minimiser
+    min_theta = min(vals_x)
+    min_NLL = min(vals_y)
+    
+    # Calculate both errors, from +/- 0.5 and from difference in curvature
+    std_t_abs = Error_abs_addition(thetas,NLL_array,min_theta,min_NLL,0.7)
+    std_t_curv = Error_Curvature(unoscillated,oscillated,ICs,vals_x,vals_y)
 
+    print(std_t_abs, std_t_curv)
+    
 #    Parabolic_minimise(oscillated,guess_x = [2.0,2.5,2.3])
-    ab, coeff = Error_Curvature(min_x,min_NLL,unoscillated,oscillated,del_m,L,energies,vals_x,vals_y)
-
-    abc = np.poly1d(coeff)
-    samp_x = np.arange(0,1.5,0.01)
 
 # ===================================PLOT======================================
     
