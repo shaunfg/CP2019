@@ -108,7 +108,7 @@ def NLL(theta_values,del_m,data,run_type):
         
     return NLL_value
 
-def Parabolic_theta(measured_data,IC,guess_x,param):
+def Parabolic_theta(measured_data,IC,guess_x):
     """
     generate f(x) from a set of x values,append the new x_3 value
     
@@ -135,11 +135,9 @@ def Parabolic_theta(measured_data,IC,guess_x,param):
             x_3 = x_list[0]
         return x_3
     
-    if param == "theta":
-        random_x = guess_x)
-        thetas = random_x
-        
-    
+    IC = np.array(IC)
+    param = 'theta'
+
     random_x = guess_x#[random.uniform(x_bottom,x_top) for x in range(3)]
     random_y = NLL(np.array(random_x),IC,measured_data,param)
 
@@ -191,7 +189,6 @@ def Parabolic_theta(measured_data,IC,guess_x,param):
             # Calculates the f(x) of four x values
             print(measured_data)
             random_y = NLL(np.array(random_x),IC,measured_data,param)
-        print(x_3)
         
         if round(x_3,18) == round(x_3_last,18):
             end_count +=1
@@ -297,9 +294,6 @@ def Error_Curvature(unoscillated_rates,measured_events,del_mass_square,IC,parabo
     return std_theta
 
 #%% Two Dimensional Minimisation (Section 4)
-
-
-
 def Parabolic_mass(measured_data,theta_IC, guess_m):
     """
     generate f(x) from a set of x values,append the new x_3 value
@@ -392,10 +386,10 @@ def Parabolic_mass(measured_data,theta_IC, guess_m):
     return random_x, random_y
 
 def Univariate(theta_IC, measured_data, guess_m,guess_x):
-#    min_x_mass,min_y_mass = Parabolic_mass(measured_data, theta_IC=theta_IC, guess_m=guess_m)
+    min_x_mass,min_y_mass = Parabolic_mass(measured_data, theta_IC=theta_IC, guess_m=guess_m)
 
-    min_x_mass,min_y_mass = Parabolic_theta(measured_data, IC=theta_IC, guess_x=guess_m,param = 'mass')
-    min_x_thetas, min_y_t = Parabolic_theta(measured_data=measured_data, IC=min(min_x_mass), guess_x=guess_x,param='theta')
+#    min_x_mass,min_y_mass = Parabolic_theta(measured_data, IC=theta_IC, guess_x=guess_m,param = 'mass')
+    min_x_thetas, min_y_t = Parabolic_theta(measured_data=measured_data, IC=min(min_x_mass), guess_x=guess_x)
     return min_x_mass,min_y_mass,min_x_thetas,min_y_t
 
 #%%
@@ -419,40 +413,44 @@ if __name__ == "__main__":
     NLL_thetas = NLL(thetas,del_m_square,oscillated,"theta")
     
     # Parabolic Minimise
-    vals_x,vals_y = Parabolic_theta(oscillated,IC=del_m_square,guess_x = [0.2,0.5,1],param ='theta')
+    vals_x,vals_y = Parabolic_theta(oscillated,IC=del_m_square,guess_x = [0.2,0.5,1])
     
     # Minimums based on the parabolic minimiser
     min_theta_1D = min(vals_x)
     min_NLL_1D = min(vals_y)
-    print(min_theta_1D,"Check")
     
     # Calculate both errors, from +/- 0.5 and from difference in curvature
     std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
     std_t_curv = Error_Curvature(unoscillated,oscillated,del_m_square,ICs,vals_x,vals_y)
-
-    print(std_t_abs, std_t_curv)
-
+    
+    print("\nMin Theta 1D Parabolic Minimiser = {:.4f} +/- {:.4f} or {:.4f}".format(min_theta_1D,std_t_abs,std_t_curv))
+    
     # Two dimensional minimisation
     theta = np.array([np.pi / 4])
     masses = np.linspace(1e-3,3e-3,1000)
     NLL_masses = NLL(theta,masses,oscillated,run_type = "mass")
-
+    
+    # Obtain Univariate minimisation    
     a,b,c,d = Univariate(theta,oscillated,[1e-3,2e-3,3e-3],guess_x =[0.2, 0.5, 1])
     min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas = (a,b,c,d)
     
+    # Find Minimum values of masses and thetas
     min_mass_2D = min(min_masses_2D)
     min_theta_2D = min(min_thetas_2D)
-    abc = Error_abs_addition(masses,NLL_masses,min_mass_2D,min(min_NLL_masses),0.7)
+    
+    # Find errors on univariate
+    std_mass_2D = Error_abs_addition(masses,NLL_masses,min_mass_2D,min(min_NLL_masses),0.7)
+    std_mass_t = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_thetas_2D,
+                          min_NLL_thetas)
     
     
     #(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
     
 #    abc = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
 
-    print(min_mass_2D,min_theta_2D)
+    print("Minimum mass 2D Parabolic Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
+    print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
 
-    #TODO: OBTAIN ERROR
-    #TODO: Set convergence limit
 # ===================================PLOT======================================
     
 #    # Plot hist

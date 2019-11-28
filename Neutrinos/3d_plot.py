@@ -14,19 +14,21 @@ from data_exploration import read_data
 
 data = read_data("data.txt")
 measured_data = data["oscillated_rate"].tolist()
+energies = data["energy"].tolist()
+
 
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 
-NLL()
 
 def f(x, y):
     return np.sin(np.sqrt(x ** 2 + y ** 2))
 
 x = np.linspace(-6, 6, 30)
 y = np.linspace(-6, 6, 30)
-
 X, Y = np.meshgrid(x, y)
+
+Z = NLL(x,y,data,'theta')
 Z = f(X, Y)
 
 ax = plt.axes(projection='3d')
