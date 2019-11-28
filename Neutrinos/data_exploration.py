@@ -195,6 +195,7 @@ def Error_abs_addition(variables,NLL_values, min_val_x,min_NLL,above_min):
     comparison_df = pd.DataFrame({"Var":variables,"NLL":NLL_values})
     # Localise to first minimum
     comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Var < 1.5)]
+#    print(comparison_df)
     
     # Finds LHS and RHS of the minimum
     LHS = comparison_df.loc[comparison_df.Var < min_val_x]
@@ -210,7 +211,7 @@ def Error_abs_addition(variables,NLL_values, min_val_x,min_NLL,above_min):
         
     return std_dev
 
-def Error_Curvature(unoscillated_rates,measured_events,IC,parabolic_x,parabolic_y):
+def Error_Curvature(unoscillated_rates,measured_events,del_mass_square,IC,parabolic_x,parabolic_y):
     """
     Calculates error by finding difference in second derivatives. 
     
@@ -222,7 +223,7 @@ def Error_Curvature(unoscillated_rates,measured_events,IC,parabolic_x,parabolic_
     min_val = min(parabolic_x)
     min_NLL = min(parabolic_y)
     
-    del_mass_square,L,E = IC
+    L,E = IC
     
     # Calculate second derivative of theoretical NLL value
     t = min_val
@@ -359,7 +360,6 @@ def Parabolic_mass(measured_data,theta_IC, guess_m):
     random_y = NLL_two(theta_IC,np.array(random_x), measured_data)
 
     # while abs(x_3 - x_3_last) > 1e-10:
-    # TODO: Sort out condtion
     # while abs(x_3_last - x_3) > 1e-
     for i in range(20):
         # Find maximum f(x) values & delete smallest x value
@@ -404,14 +404,14 @@ def Parabolic_mass(measured_data,theta_IC, guess_m):
     random_y = NLL_two(theta_IC,random_x, measured_data)
     random_x = random_x
 
-    return random_x
+    return random_x, random_y
 
 def Univariate(theta_IC, measured_data, guess_m,guess_x):
-    min_masses = Parabolic_mass(measured_data, theta_IC=theta_IC, guess_m=guess_m)
-    min_thetas, min_NLLs = Parabolic_theta(measured_data=measured_data, del_m=min(min_masses), guess_x=guess_x)
-    return min(min_masses),min(min_thetas)
+    min_x_mass,min_y_mass = Parabolic_mass(measured_data, theta_IC=theta_IC, guess_m=guess_m)
+    min_x_thetas, min_y_t = Parabolic_theta(measured_data=measured_data, del_m=min(min_x_mass), guess_x=guess_x)
+    return min_x_mass,min_y_mass,min_x_thetas,min_y_t
 
-
+#%%
 if __name__ == "__main__":
     data = read_data("data.txt")
 #    data = read_data("chris_data.txt")
@@ -426,7 +426,7 @@ if __name__ == "__main__":
     oscillated = np.array(data["oscillated_rate"].tolist()) # measured
     unoscillated = np.array(data["unoscillated_rate"].tolist()) # simulated
     predicted = oscillated_prediction([np.pi/4],del_m_square)
-    ICs = (del_m_square,L,energies)
+    ICs = (L,energies)
     
     # Calculate NLL 
     NLL_thetas = NLL(thetas,oscillated,del_m_square)
@@ -441,7 +441,7 @@ if __name__ == "__main__":
     
     # Calculate both errors, from +/- 0.5 and from difference in curvature
     std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
-    std_t_curv = Error_Curvature(unoscillated,oscillated,ICs,vals_x,vals_y)
+    std_t_curv = Error_Curvature(unoscillated,oscillated,del_m_square,ICs,vals_x,vals_y)
 
     print(std_t_abs, std_t_curv)
 
@@ -450,7 +450,17 @@ if __name__ == "__main__":
     masses = np.linspace(1e-3,3e-3,1000)
     NLL_masses = NLL_two(theta,masses,oscillated)
 
-    min_mass_2D,min_theta_2D = Univariate(theta,oscillated,[1e-3,2e-3,3e-3],guess_x =[0.2, 0.5, 1])
+    a,b,c,d = Univariate(theta,oscillated,[1e-3,2e-3,3e-3],guess_x =[0.2, 0.5, 1])
+    min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas = (a,b,c,d)
+    
+    min_mass_2D = min(min_masses_2D)
+    min_theta_2D = min(min_thetas_2D)
+    abc = Error_abs_addition(masses,NLL_masses,min_mass_2D,min(min_NLL_masses),0.7)
+    
+    
+    #(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
+    
+#    abc = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
 
     print(min_mass_2D,min_theta_2D)
 
