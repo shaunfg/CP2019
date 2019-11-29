@@ -11,24 +11,25 @@ import matplotlib.pyplot as plt
 import random
 
 
-def Gaussian(x,mean):
-    # Returns list of gaussian values, centered on mean 
-    sigma = 1
-    PDF = 1/(sigma * np.sqrt(2*np.pi)) * np.exp(-1/2*((x-mean)/sigma)**2)
-    return PDF
+#def Gaussian(x,mean):
+#    # Returns list of gaussian values, centered on mean 
+#    sigma = 1
+#    PDF = 1/(sigma * np.sqrt(2*np.pi)) * np.exp(-1/2*((x-mean)/sigma)**2)
+#    return PDF
+#
 
 
 
-def Thermal(E,T):
-    # Returns list of gaussian values, centered on mean 
-#    E = func
-    k_b = 1#1.38e-23
-    return np.exp(- E / (k_b * T))
 
 def func(x,m):
     return (m-5)**2 +(x-3)**2
+
     
 def Simulated_Annealing(PDF,T_start,T_step,guess_x= [0,1]):
+    
+    def Thermal(E,T):
+        k_b = 1
+        return np.exp(- E / (k_b * T))
     
     x_values = []
     

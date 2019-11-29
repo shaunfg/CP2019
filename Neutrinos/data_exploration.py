@@ -14,6 +14,7 @@ import warnings
 from scipy.interpolate import lagrange
 from scipy.interpolate import interp1d
 from numpy.polynomial.polynomial import Polynomial
+import random
 
 
 # 3.1 The data
@@ -392,6 +393,116 @@ def Univariate(theta_IC, measured_data, guess_m,guess_x):
     min_x_thetas, min_y_t = Parabolic_theta(measured_data=measured_data, IC=min(min_x_mass), guess_x=guess_x)
     return min_x_mass,min_y_mass,min_x_thetas,min_y_t
 
+#%% Simulated Annealing
+ 
+def NLL_simple(theta_values,del_m):
+
+    def survival_probability_1(E,theta,del_mass_square,L):
+        coeff = 1.267 * del_mass_square * L  / E
+        P = 1 - np.sin(2*theta)**2 * np.sin(coeff) **2
+        return P
+    
+    def oscillated_prediction_1(thetas,masses):
+        # Calculate probabiliites of oscillation
+        probs = survival_probability_1(energies,thetas,masses,L)
+    
+        # Obtain unoscillated rates from data grame
+        unosc_rates = data["unoscillated_rate"].tolist()
+        
+        # Convert to numpy arrays
+        probs = np.array(probs)
+        unosc_rates = np.array(unosc_rates)
+        
+        # Find oscillated rates
+        osc_rates = probs * unosc_rates
+        
+        return [osc_rates]
+    
+    rates = oscillated_prediction_1(thetas=theta_values,masses=del_m)
+    k = oscillated
+    
+    NLL_value = []
+    
+#    print(rates)
+    for j in range(len(rates)):
+        tmp = []
+        l  = rates[j]
+
+        for i in range(len(l)):
+            
+#            print(k)
+            if k[i] != 0:
+                value = l[i] - k[i] + k[i] * np.log10(k[i]/l[i])
+                tmp.append(value)
+            else:   
+                pass
+
+        NLL_value.append(sum(tmp))
+        
+    return NLL_value[0]  
+
+def Simulated_Annealing(T_start,T_step,guess_t= [0,1],guess_m = [1e-3,3e-3]):
+    
+    def Thermal(E,T):
+        k_b = 1
+        return np.exp(- E / (k_b * T))
+    
+    t_values = []
+    
+    
+    h,h_2 = (0.05,1e-3) # step sizes (initial conditions)
+    # Set first guess 
+    t = random.uniform(guess_t[0],guess_t[1])
+    m = random.uniform(guess_m[0],guess_m[1])
+    
+    T = T_start
+    success_count = 0
+    count = 0
+    while T > 0:
+        
+        if T% 100 == 0:
+            print("Temperature = {}K".format(T))
+        t_dash = random.uniform(t-h,t+h)
+        m_dash = random.uniform(m-h_2,m+h_2)
+        
+        if t_dash < 0:
+            t_dash = t_dash *-1
+        if m_dash < 0:
+            m_dash = m_dash *-1
+            
+        del_f = NLL_simple(t_dash,m_dash)- NLL_simple(t,m) 
+        p_acc = Thermal(del_f,T)
+        
+        if p_acc > 1 : # if next energy value is smaller, then update
+            # Changes step size, formula ensures small step size
+            h = (t_dash - int(t_dash)) / 2
+            h_2 = (m_dash - int(m_dash)) / 2
+
+            t = t_dash
+            m = m_dash
+            
+            success_count +=1
+        else:
+#            print('----',x_dash,x)
+            pass 
+
+        t_values.append(t_dash)
+
+        T-= T_step
+        
+        T = round(T,10) # Deals with floating point error
+        
+        count+=1
+        
+    NLL_value = NLL_simple(t,m) 
+    print(m,t,NLL_value)
+    print("Efficiency = ".format(success_count/count))
+    
+#    plt.plot(x_values,func(np.array(x_values),y_dash),'x')
+#    plt.figure()
+#    plt.hist(x_values,bins = 80)
+Simulated_Annealing(T_start = 1000,T_step = 0.1)
+
 #%%
 if __name__ == "__main__":
     data = read_data("data.txt")
@@ -442,14 +553,14 @@ if __name__ == "__main__":
     std_mass_2D = Error_abs_addition(masses,NLL_masses,min_mass_2D,min(min_NLL_masses),0.7)
     std_mass_t = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_thetas_2D,
                           min_NLL_thetas)
-    
-    
-    #(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
-    
-#    abc = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_masses_2D,min_NLL_masses)
-
+        
     print("Minimum mass 2D Parabolic Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
     print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
+
+    #TODO: Test functions for minimisers
+
+    Simulated_Annealing(T_start = 1000,T_step = 0.1)
+    
 
 # ===================================PLOT======================================
     
