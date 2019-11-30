@@ -444,7 +444,7 @@ def NLL_simple(theta_values,del_m):
 def Simulated_Annealing(T_start,T_step,guess_t= [0,1],guess_m = [1e-3,3e-3]):
     
     def Thermal(E,T):
-        k_b = 1
+        k_b = 0.01
         return np.exp(- E / (k_b * T))
     
     t_values = []
@@ -496,12 +496,12 @@ def Simulated_Annealing(T_start,T_step,guess_t= [0,1],guess_m = [1e-3,3e-3]):
         
     NLL_value = NLL_simple(t,m) 
     print(m,t,NLL_value)
-    print("Efficiency = ".format(success_count/count))
+    print("Efficiency = {:.4f}%".format(success_count/count * 100))
     
 #    plt.plot(x_values,func(np.array(x_values),y_dash),'x')
 #    plt.figure()
 #    plt.hist(x_values,bins = 80)
-Simulated_Annealing(T_start = 1000,T_step = 0.1)
+#Simulated_Annealing(T_start = 1000,T_step = 0.1)
 
 #%%
 if __name__ == "__main__":
@@ -558,6 +558,7 @@ if __name__ == "__main__":
     print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
 
     #TODO: Test functions for minimisers
+    #TODO: Verify step sizes
 
     Simulated_Annealing(T_start = 1000,T_step = 0.1)
     
