@@ -78,12 +78,13 @@ def oscillated_prediction(thetas,masses,run_type):
     
     # Find oscillated rates
     osc_rates = probs * unosc_rates
-    
-    if isinstance(osc_rates,np.ndarray):
-        return osc_rates
-    else:
-        print(osc_rates)
-        return [osc_rates]
+    return osc_rates
+
+#    if isinstance(osc_rates,np.ndarray):
+#    else:
+#        print(osc_rates)
+#        print("here-----")
+#        return [osc_rates]
 
 def NLL(theta_values,del_m,data,run_type):
 #    print(theta_values)
@@ -441,43 +442,58 @@ def NLL_simple(theta_values,del_m):
         
     return NLL_value[0]  
 
-def Simulated_Annealing(T_start,T_step,guess_t= [0,1],guess_m = [1e-3,3e-3]):
+def Ackley(x,y):
+    A = -20 * np.exp(-0.2 * np.sqrt(0.5 * (x**2 + y**2)))
+    B = - np.exp(0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y)))
+    return A + B + np.exp(1) + 20
+
+def Simulated_Annealing(func,T_start,T_step,xy_step,guess_t=[0,1],guess_m = [1e-3,3e-3]):
     
     def Thermal(E,T):
-        k_b = 0.01
+        k_b = 1.38e-23
         return np.exp(- E / (k_b * T))
     
     t_values = []
     
-    
-    h,h_2 = (0.05,1e-3) # step sizes (initial conditions)
+    h,h_2 = xy_step # step sizes (initial conditions)
     # Set first guess 
     t = random.uniform(guess_t[0],guess_t[1])
     m = random.uniform(guess_m[0],guess_m[1])
+    
+#    print(t,m,h,h_2)
     
     T = T_start
     success_count = 0
     count = 0
     while T > 0:
-        
+#    for i in range(50):
+#        print(t,m,h,h_2)
+
         if T% 100 == 0:
             print("Temperature = {}K".format(T))
+            print(t,m)
         t_dash = random.uniform(t-h,t+h)
         m_dash = random.uniform(m-h_2,m+h_2)
         
-        if t_dash < 0:
-            t_dash = t_dash *-1
-        if m_dash < 0:
-            m_dash = m_dash *-1
+#        print(t_dash,t-h,t+h,h)
             
-        del_f = NLL_simple(t_dash,m_dash)- NLL_simple(t,m) 
+        del_f = func(t_dash,m_dash)- func(t,m) 
         p_acc = Thermal(del_f,T)
         
         if p_acc > 1 : # if next energy value is smaller, then update
             # Changes step size, formula ensures small step size
-            h = (t_dash - int(t_dash)) / 2
-            h_2 = (m_dash - int(m_dash)) / 2
-
+            
+            # Ensure it stays around the first minima
+            if t_dash > 1: 
+                pass 
+            else: 
+                h = t_dash #Step becomes +/- the value itself. 
+            
+            if m_dash > 1: 
+                pass
+            else: 
+                h_2 = m_dash #Step becomes +/- the value itself.  
+            
             t = t_dash
             m = m_dash
             
@@ -494,14 +510,24 @@ def Simulated_Annealing(T_start,T_step,guess_t= [0,1],guess_m = [1e-3,3e-3]):
         
         count+=1
         
-    NLL_value = NLL_simple(t,m) 
+    NLL_value = func(t,m) 
     print(m,t,NLL_value)
     print("Efficiency = {:.4f}%".format(success_count/count * 100))
     
+
+# =============================================================================
+#     NLL_values = NLL(np.array(t_values),m,oscillated, run_type = 'theta')
+#     df = pd.DataFrame({"Thetas":t_values,"NLL":NLL_values,})
+#     
+#     df.to_csv("sim_anneal_data.csv")
+#     plt.plot(t_values,NLL_values,
+#              'x')
+# =============================================================================
+
+
 #    plt.plot(x_values,func(np.array(x_values),y_dash),'x')
 #    plt.figure()
 #    plt.hist(x_values,bins = 80)
-#Simulated_Annealing(T_start = 1000,T_step = 0.1)
 
 #%%
 if __name__ == "__main__":
@@ -509,7 +535,7 @@ if __name__ == "__main__":
 #    data = read_data("chris_data.txt")
     
     # Guess Parameters
-    del_m_square = 2.915e-3 # adjusted to fit code data better
+    del_m_square = 2.4e-3 # adjusted to fit code data better
     L = 295
     
     # Prepare lists to be used in calculations
@@ -556,13 +582,18 @@ if __name__ == "__main__":
         
     print("Minimum mass 2D Parabolic Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
     print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
+    print("Minimum theta 2D Parabolic Minimiser = {:.4f}".format(min(min_NLL_thetas)))
 
-    #TODO: Test functions for minimisers
     #TODO: Verify step sizes
-
-    Simulated_Annealing(T_start = 1000,T_step = 0.1)
+    #TODO: Uncertainty on mass? on theta? from simulated annealing
+#%%
+    # Simulated Annealing test with Ackley function 
+    Simulated_Annealing(Ackley,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
+                    guess_t= [-5,5],guess_m= [-5,5])
+#%%
+    # Simulated Annealing with NLL 
+    Simulated_Annealing(NLL_simple,T_start = 1000,T_step = 0.01,xy_step = [0.3,1e-3])
     
-
 # ===================================PLOT======================================
     
 #    # Plot hist
