@@ -70,8 +70,8 @@ def oscillated_prediction(thetas,masses,run_type):
         elif isinstance(masses, list) == True:
             probs = [survival_probability(energies, thetas, masses[i], L) for i in
                      range(len(masses))]
-        else:
-            probs = survival_probability(energies, thetas, masses, L)
+#        else:
+#            probs = survival_probability(energies, thetas, masses, L)
             
     elif run_type == "theta":
     
@@ -81,9 +81,9 @@ def oscillated_prediction(thetas,masses,run_type):
         elif isinstance(thetas,list) == True:
             probs = [survival_probability(energies,thetas[i],masses,L) for i in
                      range(len(thetas))]
-        else:
-            probs = survival_probability(energies,thetas,masses,L)
-            
+#        else:
+#            probs = survival_probability(energies,thetas,masses,L)
+#            
     else:
         print(run_type)
     
@@ -246,9 +246,7 @@ def Parabolic(measured_data,IC,guess_x,param = 'theta'):
             end_count +=1
         else:
             end_count = 0
-        if param == "mass":
-            print(x_3)    
-    
+
     max_idx = np.argmax(random_y)
     del random_x[max_idx]        
     random_y = NLL_func(random_x)
@@ -298,7 +296,27 @@ def Error_abs_addition(variables,NLL_values, min_val_x,min_NLL,above_min):
 std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
 
 #%%
-def Error_Curvature(unoscillated_rates,measured_events,del_mass_square,IC,parabolic_x,parabolic_y):
+def Error_Curvature(unoscillated_rates,measured_events,parabolic_x,parabolic_y):    
+    # Calculate second derivative of Lagrange polynomial fit
+    x = parabolic_x# 
+    y = parabolic_y
+    
+    # Based on the parabolic minimiser
+    poly = lagrange(x,y)
+    coefficients = Polynomial(poly).coef
+    
+    # Just consider curvature, ax**2 = 0.5
+    std_theta = np.sqrt(0.5/coefficients[0])
+    
+    return std_theta
+
+# Calculate error from +/- 0.5 through fitting to second derivative  
+std_t_curv = Error_Curvature(unoscillated,oscillated,vals_x,vals_y)
+
+print("\nMin Theta 1D Parabolic Minimiser = {:.6f} +/- {:.6f} or {:.6f}".format(min_theta_1D,std_t_abs,std_t_curv))
+
+#%%
+def Error_2nd_Dev(unoscillated_rates,measured_events,del_mass_square,IC,parabolic_x,parabolic_y):
     """
     Calculates error by finding difference in second derivatives. 
     
@@ -340,35 +358,22 @@ def Error_Curvature(unoscillated_rates,measured_events,del_mass_square,IC,parabo
     poly = lagrange(x,y)
     coefficients = Polynomial(poly).coef
     
-    # Shift polynomial by 0.5 and solve for roots
-    coefficients[-1] = coefficients[-1] - min_NLL - 0.5
-    roots = np.roots(coefficients)
-    
-    # Curvature = a
-    curvature_fit = roots[0]
-    
     # Find difference in curvature value
-    curvature_del = curvature_original - curvature_fit
+    curvature_del = curvature_original - coefficients[0]
     
     # Just consider curvature, ax**2 = 0.5
     std_theta = np.sqrt(0.5/curvature_del)
     
     return std_theta
 
-# Calculate error from +/- 0.5 through fitting to second derivative  
-std_t_curv = Error_Curvature(unoscillated,oscillated,del_m_square,ICs,vals_x,vals_y)
+std_t_dev = Error_2nd_Dev(unoscillated,oscillated,del_m_square,ICs,vals_x,vals_y)
 
-print("\nMin Theta 1D Parabolic Minimiser = {:.4f} +/- {:.4f} or {:.4f}".format(min_theta_1D,std_t_abs,std_t_curv))
-
-
+print("error 2nd dev", std_t_dev)
 #%% Two Dimensional Minimisation (Section 4)
 def Univariate(theta_IC, measured_data, guess_m,guess_x):
     min_x_mass = guess_m
     min_x_thetas = guess_x
     for i in range(10):
-#        print(i)
-        print(min_x_mass)
-        print(min_x_thetas)
 #        min_x_mass,min_y_mass = Parabolic_mass(measured_data, theta_IC=min(min_x_thetas), guess_m=min_x_mass)
         min_x_mass,min_y_mass = Parabolic(measured_data=measured_data, IC=min(min_x_thetas), guess_x=min_x_mass,param = "mass")
         min_x_thetas, min_y_t = Parabolic(measured_data=measured_data, IC=min(min_x_mass), guess_x=min_x_thetas)
@@ -389,17 +394,16 @@ min_mass_2D = min(min_masses_2D)
 min_theta_2D = min(min_thetas_2D)
 
 # Find errors on univariate
-std_mass_2D = Error_abs_addition(masses,NLL_masses,min_mass_2D,min(min_NLL_masses),0.2)
-std_mass_t = Error_Curvature(unoscillated,oscillated,min_mass_2D,ICs,min_thetas_2D,
+std_mass_2D = Error_Curvature(unoscillated,oscillated,min_masses_2D,
+                      min_NLL_masses)
+std_mass_t = Error_Curvature(unoscillated,oscillated,min_thetas_2D,
                       min_NLL_thetas)
     
 print("Minimum mass 2D Parabolic Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
 print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
 print("Minimum NLL 2D Parabolic Minimiser = {:.4f}".format(min(min_NLL_thetas)))
 
-
-#%% Simulated Annealing
- 
+#%% Simulated Annealing 
 def NLL_simple(theta_values,del_m):
 
     def survival_probability_1(E,theta,del_mass_square,L):
@@ -575,7 +579,6 @@ Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
     #TODO: lambda combine parabolic functions?
     #TODO: comment why do m first -- plot graphs
     #TODO: Comments on answers 
-    #TODO: error curvature from a parabolic fit 
     #TODO: test minimisers
     #TODO: Verify step sizes of temperature, 
     #TODO: Uncertainty on mass? on theta? from simulated annealing
