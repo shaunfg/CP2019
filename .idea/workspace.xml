@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3359f370-4a2f-44a2-9978-542645c65eac" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/Neutrinos/annealing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/annealing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Computational Physics.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Computational Physics.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Neutrinos/data_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/data_exploration.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -60,30 +62,6 @@
     <option name="height" value="1000" />
   </component>
   <component name="ProjectId" id="1SkdxScNGxmGDPOXKI67Ym9mIBM" />
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="Computational Physics" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Computational Physics" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Computational Physics" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Computational Physics" type="462c0819:PsiDirectoryNode" />
-              <item name="Neutrinos" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-    </panes>
-  </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -108,9 +86,6 @@
       <module name="Computational Physics" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Neutrinos" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -218,9 +193,9 @@
       <list>
         <item itemvalue="Python.data_exploration" />
         <item itemvalue="Python.data_exploration" />
-        <item itemvalue="Python.parabolic" />
-        <item itemvalue="Python.four_FFT" />
-        <item itemvalue="Python.three_Interpolation" />
+        <item itemvalue="Python.data_exploration" />
+        <item itemvalue="Python.data_exploration" />
+        <item itemvalue="Python.data_exploration" />
       </list>
     </recent_temporary>
   </component>
@@ -244,6 +219,7 @@
       <workItem from="1574722497935" duration="1615000" />
       <workItem from="1574765273174" duration="867000" />
       <workItem from="1575217472693" duration="12000" />
+      <workItem from="1575394081199" duration="486000" />
     </task>
     <servers />
   </component>
@@ -335,6 +311,31 @@
           <line>96</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
+          <line>186</line>
+          <option name="timeStamp" value="47" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
+          <line>198</line>
+          <option name="timeStamp" value="50" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
+          <line>191</line>
+          <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
+          <line>219</line>
+          <option name="timeStamp" value="52" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
+          <line>142</line>
+          <option name="timeStamp" value="53" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -350,6 +351,6 @@
     <SUITE FILE_PATH="coverage/computational_physics$two_Crout.coverage" NAME="two_Crout Coverage Results" MODIFIED="1573234202484" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
     <SUITE FILE_PATH="coverage/computational_physics$parabolic.coverage" NAME="parabolic Coverage Results" MODIFIED="1574722549990" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Neutrinos" />
     <SUITE FILE_PATH="coverage/computational_physics$1_floaing_point.coverage" NAME="1_floaing_point Coverage Results" MODIFIED="1572911573537" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Assignment" />
-    <SUITE FILE_PATH="coverage/computational_physics$data_exploration.coverage" NAME="data_exploration Coverage Results" MODIFIED="1574765696793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Neutrinos" />
+    <SUITE FILE_PATH="coverage/computational_physics$data_exploration.coverage" NAME="data_exploration Coverage Results" MODIFIED="1575394300685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Neutrinos" />
   </component>
 </project>
