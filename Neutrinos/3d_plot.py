@@ -4,7 +4,7 @@ Created on Thu Nov 28 19:53:51 2019
 
 @author: sfg17
 """
-
+#%%
 from mpl_toolkits import mplot3d
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,11 +24,11 @@ ax = plt.axes(projection='3d')
 def f(x, y):
     return np.sin(np.sqrt(x ** 2 + y ** 2))
 
-x = np.linspace(-6, 6, 30)
-y = np.linspace(-6, 6, 30)
+x = np.linspace(-0,np.pi/2, 30)
+y = np.linspace(0, 5e-3, 30)
 X, Y = np.meshgrid(x, y)
 
-Z = NLL(x,y,data,'theta')
+Z = NLL(x,y)
 Z = f(X, Y)
 
 ax = plt.axes(projection='3d')

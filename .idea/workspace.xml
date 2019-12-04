@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3359f370-4a2f-44a2-9978-542645c65eac" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Computational Physics.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Computational Physics.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Neutrinos/data_exploration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Neutrinos/data_exploration.py" afterDir="false" />
     </list>
@@ -219,7 +217,7 @@
       <workItem from="1574722497935" duration="1615000" />
       <workItem from="1574765273174" duration="867000" />
       <workItem from="1575217472693" duration="12000" />
-      <workItem from="1575394081199" duration="486000" />
+      <workItem from="1575394081199" duration="670000" />
     </task>
     <servers />
   </component>
@@ -318,7 +316,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>198</line>
+          <line>199</line>
           <option name="timeStamp" value="50" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -328,7 +326,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Neutrinos/data_exploration.py</url>
-          <line>219</line>
+          <line>220</line>
           <option name="timeStamp" value="52" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
