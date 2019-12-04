@@ -163,7 +163,7 @@ def plot_theta(mass = del_m_square):
 
 
 #%%
-def Parabolic(guess_x,IC = None,func = None,param = 'theta'):
+def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
     """
     generate f(x) from a set of x values,append the new x_3 value
     
@@ -227,6 +227,7 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta'):
         # Finds the next minimum value
         x_3_last = x_3
         x_3 = _find_next_point(vals_x, vals_y)
+        print(x_3)
         # Check for negative curvature
         if NLL_func(x_3) > all(vals_y):
             warnings.warn("Interval has positive & negative curvature", Warning) 
@@ -381,7 +382,6 @@ print("error 2nd dev", std_t_dev)
 #%%
 points = []
 
-
 points_abs = [min_theta_1D + x for x in std_t_abs]
 NLL_points_abs = NLL(np.array(points_abs),del_m_square)
 
@@ -404,7 +404,6 @@ plt.plot(points_dev,NLL_points_dev,'x',label = "2nd Dev Curvature Error")
 plt.legend()
 
 #%%
-
 # Two dimensional minimisation
 def plot_mass(theta = np.pi/4):
     masses = np.linspace(0,5e-3,1000)
@@ -470,33 +469,6 @@ std_mass_t = Error_Curvature(unoscillated,oscillated,min_thetas_2D,
 print("Minimum mass 2D Univariate Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
 print("Minimum theta 2D Univariate Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
 print("Minimum NLL 2D Univariate Minimiser = {:.4f}".format(min(min_NLL_thetas)))
-
-#%%
-
-def plot_color_map(x,y,func):
-    Z = []
-    for i in range(len(x)):
-        Z.append([func(x[i],y[j]) for j in range(len(y))])
-    
-    #print(Z)
-    fig, (ax0) = plt.subplots(1, 1)
-    
-    c = ax0.pcolor(Z,cmap = 'viridis')
-    ax0.set_title('default: no edges')
-    
-    space = 5
-    
-    ticks = np.linspace(0,len(Z[0]),space)
-    plt.setp(ax0, xticks=ticks, xticklabels=np.linspace(min(x),max(x),space),
-             yticks=ticks, yticklabels = np.linspace(min(y),max(y),space))
-    
-    ax0.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax0.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    fig.tight_layout()
-    
-    fig.colorbar(c, ax=ax0)
-   
-plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
 #%%
 plt.figure()
 plt.plot(theta_step,mass_step)
@@ -507,8 +479,31 @@ plt.plot(min(min_masses_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 plot_theta(mass = min(min_masses_2D))
 plt.plot(min(min_thetas_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 
+#%% Plot Colour map
+
+def plot_color_map(x,y,func):
+    Z = []
+    for i in range(len(x)):
+        Z.append([func(x[j],y[i]) for j in range(len(y))])
+    
+    fig,axes = plt.subplots(1,1)
+    
+    c = axes.imshow(Z,origin="lower",interpolation = "None",aspect = "auto",
+                    extent = [min(x),max(x),min(y),max(y)],cmap = 'plasma')
+    
+    plt.xlabel("$\Theta$")
+    plt.ylabel("$\Delta m^2$")
+    plt.title("NLL colour map of $\Delta m^2$ and $\Theta$")
+    
+    fig.colorbar(c,ax=axes, label='NLL')
+#    print("\n",Z)
+   
+#plot_color_map(np.linspace(0,np.pi/2,100),np.linspace(0,5e-3,100),NLL)
+plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
+
+
 #%% Simulated Annealing 
-def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses):
+def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
     
     def Thermal(E,T):
         k_b = 1.38e-23
@@ -538,7 +533,13 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses):
             
         for i in range(len(x)):
             x_dash[i] = random.uniform(x[i]-h[i],x[i] + h[i])
+        
+        if limit != None:
+            
+            while x_dash[0] >limit:
+                x_dash[0] = random.uniform(x[0]-h[0],x[0] + h[0])
 
+        
         del_f = np.array(func(*x_dash)) - np.array(func(*x)) 
         p_acc = Thermal(del_f,T)
 
@@ -581,14 +582,14 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses):
 
 
 #%% 2D Simulated Annealing with NLL 
-    
-Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 0.1,xy_step = [0.3,1e-3],
-                    guesses = [[0.7,0.8],[1e-3,3e-3]])
+Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 0.01,xy_step = [0.3,1e-3],
+                    guesses = [[0.5,0.7],[1e-3,3e-3]],limit = np.pi/4)
 
 #%% 3D Simulated Annealing with Cross Section
 # 1000,0.01
-Simulated_Annealing(NLL,N = 3,T_start = 100,T_step = 0.1,
-                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]])
+Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 0.01,
+                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]]
+                    ,limit = np.pi/4)
 #    
 #%% Test Functions
 
@@ -629,14 +630,19 @@ Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
 
 #%%
     #TODO: comment why do m first -- plot graphs
-    #TODO: Comment on merit of both methods
+"""
+
+"""
+    #TODO: Comment on merit of both methods of error
+"""
+
+"""
     #TODO: Comment on annealing better than univariate?
+"""
+
+"""
     #TODO: Comment on cross section?
     #TODO: comment Error as pi/4?
     
-    #TODO: plot colour map 
-    #TODO: Standardize answers?
     #TODO: Verify step sizes of temperature, 
     #TODO: Uncertainty on mass? on theta? from simulated annealing
-    #TODO: does the bump go away 
-    
