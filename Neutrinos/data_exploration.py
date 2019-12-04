@@ -36,7 +36,7 @@ def read_data(filename):
     df = df.astype(float)
     return df
 
-data = read_data("data.txt")
+data = read_data("//icnas3.cc.ic.ac.uk/sfg17/Desktop/Computational Physics/Neutrinos/data.txt")
     
 #%%
 # Guess Parameters
@@ -60,7 +60,10 @@ def survival_probability(E,theta,del_mass_square,L):
     return P
 
 #%%
-def oscillated_prediction(thetas,masses):
+def cross_section(E,a):
+            return 1 + a * E    
+
+def oscillated_prediction(thetas,masses, cross_a = 0):
     # Calculate probabiliites of oscillation
     
     if np.array(masses).size > np.array(thetas).size:
@@ -77,13 +80,8 @@ def oscillated_prediction(thetas,masses):
         else:
             raise ValueError("Unknown type")#     
     else:
-        if isinstance(thetas,(list,np.ndarray)) == True:
-            probs = [survival_probability(energies,thetas[i],masses,L) for i in
-                         range(len(thetas))]
-        else:
-            probs = [survival_probability(energies,thetas,masses[i],L) for i in
-                         range(len(masses))]            
-    
+        probs = [survival_probability(energies,thetas,masses,L)]       
+#    
     # Obtain unoscillated rates from data grame
     unosc_rates = data["unoscillated_rate"].tolist()
     
@@ -91,12 +89,18 @@ def oscillated_prediction(thetas,masses):
     probs = np.array(probs)
     unosc_rates = np.array(unosc_rates)
     
+    # Calculate cross sections
+    if cross_a == 0:
+        cross_sections = 1
+    else:
+        cross_sections = cross_section(energies,cross_a)
+
     # Find oscillated rates
-    osc_rates = probs * unosc_rates
+    osc_rates = probs * unosc_rates * cross_sections
     return osc_rates
 
 #%%
-predicted = oscillated_prediction([np.pi/4],del_m_square)
+predicted = oscillated_prediction(np.pi/4,del_m_square)
 
 fig,axes = plt.subplots(2,1,figsize = (9,10))
 
@@ -116,9 +120,9 @@ axes[1].legend()
 
 #%%
 
-def NLL(theta_values,del_m):
+def NLL(theta_values,del_m,cross_a = 0):
 #    print(theta_values)
-    rates = oscillated_prediction(thetas=theta_values,masses=del_m)
+    rates = oscillated_prediction(thetas=theta_values,masses=del_m,cross_a=cross_a)
     k = oscillated
     
     NLL_value = []
@@ -137,17 +141,27 @@ def NLL(theta_values,del_m):
                 pass
 
         NLL_value.append(sum(tmp))
-    return NLL_value
+    if len(NLL_value) ==1:
+        return NLL_value[0]
+    else:
+        return NLL_value
 
 #%%
 # Calculate NLL 
 NLL_thetas = NLL(thetas,del_m_square)
+def plot_theta(mass = del_m_square):
+    
+    thetas = np.arange(0,np.pi,0.002)
+    # Calculate NLL 
+    NLL_thetas = NLL(thetas,mass)
+    
+    # NLL against theta    
+    plt.figure()
+    plt.xlabel("Thetas")
+    plt.ylabel("NLL")
+    plt.plot(thetas, NLL_thetas)
 
-# NLL against theta    
-plt.figure()
-plt.xlabel("Thetas")
-plt.ylabel("NLL")
-plt.plot(thetas, NLL_thetas)
+
 #%%
 def Parabolic(guess_x,IC = None,func = None,param = 'theta'):
     """
@@ -213,9 +227,8 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta'):
         # Finds the next minimum value
         x_3_last = x_3
         x_3 = _find_next_point(vals_x, vals_y)
-        
         # Check for negative curvature
-        if NLL_func([x_3])[0] > all(vals_y):
+        if NLL_func(x_3) > all(vals_y):
             warnings.warn("Interval has positive & negative curvature", Warning) 
             
             vals_x.append(x_3)
@@ -393,14 +406,16 @@ plt.legend()
 #%%
 
 # Two dimensional minimisation
-theta = np.array([np.pi / 4])
-masses = np.linspace(0,5e-3,1000)
-NLL_masses = NLL(theta,masses)
-
-plt.plot(masses,NLL_masses)
-plt.xlabel("$\Delta m^2$")
-plt.ylabel("NLL")
-plt.title("NLL against delta mass squared")
+def plot_mass(theta = np.pi/4):
+    masses = np.linspace(0,5e-3,1000)
+    NLL_masses = NLL(theta,masses)
+    
+    plt.figure()
+    plt.plot(masses,NLL_masses)
+    plt.xlabel("$\Delta m^2$")
+    plt.ylabel("NLL")
+    plt.title("NLL against delta mass squared")
+#    plt.plot(0.0026026,NLL(np.pi / 4,0.0026026),'x')
 
 #%% Two Dimensional Minimisation (Section 4)
 def Univariate(func,guess_a,guess_b):
@@ -411,9 +426,18 @@ def Univariate(func,guess_a,guess_b):
     R = np.sqrt(min(min_x_thetas)**2 + min(min_x_mass)**2)
     R_last = R + 10
     end_count = 0
-    while end_count <2:
+    
+    mass_step = [min(min_x_mass)]
+    theta_step = [min(min_x_thetas)]
+    
+    while end_count <3:        
         min_x_mass,min_y_mass = Parabolic(func = func,IC=min(min_x_thetas), guess_x=min_x_mass,param = "mass")
+        mass_step.append(min(min_x_mass))
+        theta_step.append(min(min_x_thetas))
+    
         min_x_thetas, min_y_t = Parabolic(func = func,IC=min(min_x_mass), guess_x=min_x_thetas)
+        mass_step.append(min(min_x_mass))
+        theta_step.append(min(min_x_thetas))
         
         # Finds if value repeats 3 times
         R = np.sqrt(min(min_x_thetas)**2 + min(min_x_mass)**2)                
@@ -422,13 +446,16 @@ def Univariate(func,guess_a,guess_b):
         else:
             end_count = 0
         R_last = R
+        
+#        print(thetas)
 
-    return min_x_mass,min_y_mass,min_x_thetas,min_y_t
+
+    return min_x_mass,min_y_mass,min_x_thetas,min_y_t, mass_step,theta_step
 
 
 # Obtain Univariate minimisation    
-a,b,c,d = Univariate(func = NLL,guess_a = [1.5e-3,2e-3,3e-3],guess_b =[0.2, 0.5, 1])
-min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas = (a,b,c,d)
+a,b,c,d,e,f = Univariate(func = NLL,guess_a = [1.5e-3,2e-3,3e-3],guess_b =[0.2, 0.5, 1])
+min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas,mass_step,theta_step = (a,b,c,d,e,f)
 
 # Find Minimum values of masses and thetas
 min_mass_2D = min(min_masses_2D)
@@ -440,57 +467,47 @@ std_mass_2D = Error_Curvature(unoscillated,oscillated,min_masses_2D,
 std_mass_t = Error_Curvature(unoscillated,oscillated,min_thetas_2D,
                       min_NLL_thetas)
     
-print("Minimum mass 2D Parabolic Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
-print("Minimum theta 2D Parabolic Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
-print("Minimum NLL 2D Parabolic Minimiser = {:.4f}".format(min(min_NLL_thetas)))
+print("Minimum mass 2D Univariate Minimiser = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
+print("Minimum theta 2D Univariate Minimiser = {:.4f} +/- {:.4f}".format(min_theta_2D,std_mass_t))
+print("Minimum NLL 2D Univariate Minimiser = {:.4f}".format(min(min_NLL_thetas)))
+
+#%%
+
+def plot_color_map(x,y,func):
+    Z = []
+    for i in range(len(x)):
+        Z.append([func(x[i],y[j]) for j in range(len(y))])
+    
+    #print(Z)
+    fig, (ax0) = plt.subplots(1, 1)
+    
+    c = ax0.pcolor(Z,cmap = 'viridis')
+    ax0.set_title('default: no edges')
+    
+    space = 5
+    
+    ticks = np.linspace(0,len(Z[0]),space)
+    plt.setp(ax0, xticks=ticks, xticklabels=np.linspace(min(x),max(x),space),
+             yticks=ticks, yticklabels = np.linspace(min(y),max(y),space))
+    
+    ax0.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax0.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    fig.tight_layout()
+    
+    fig.colorbar(c, ax=ax0)
+   
+plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
+#%%
+plt.figure()
+plt.plot(theta_step,mass_step)
+
+plot_mass(theta = min(min_thetas_2D))
+plt.plot(min(min_masses_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
+
+plot_theta(mass = min(min_masses_2D))
+plt.plot(min(min_thetas_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 
 #%% Simulated Annealing 
-def NLL_simple(theta_values,del_m):
-
-    def survival_probability_1(E,theta,del_mass_square,L):
-        coeff = 1.267 * del_mass_square * L  / E
-        P = 1 - np.sin(2*theta)**2 * np.sin(coeff) **2
-        return P
-    
-    def oscillated_prediction_1(thetas,masses):
-        # Calculate probabiliites of oscillation
-        probs = survival_probability_1(energies,thetas,masses,L)
-    
-        # Obtain unoscillated rates from data grame
-        unosc_rates = data["unoscillated_rate"].tolist()
-        
-        # Convert to numpy arrays
-        probs = np.array(probs)
-        unosc_rates = np.array(unosc_rates)
-        
-        # Find oscillated rates
-        osc_rates = probs * unosc_rates
-        
-        return [osc_rates]
-    
-    rates = oscillated_prediction_1(thetas=theta_values,masses=del_m)
-    k = oscillated
-    
-    NLL_value = []
-    
-#    print(rates)
-    for j in range(len(rates)):
-        tmp = []
-        l  = rates[j]
-
-        for i in range(len(l)):
-            
-#            print(k)
-            if k[i] != 0:
-                value = l[i] - k[i] + k[i] * np.log10(k[i]/l[i])
-                tmp.append(value)
-            else:   
-                pass
-
-        NLL_value.append(sum(tmp))
-        
-    return NLL_value[0]  
-
 def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses):
     
     def Thermal(E,T):
@@ -511,106 +528,67 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses):
     success_count = 0
     count = 0
     
-#    values = []
+    theta_steps = []
+    mass_steps = []
+    
     while T > 0:
-        
-#        print(T)
-        if T% 100 == 0:
-            print("Temperature = {}K\n".format(T))
-#            [print(x[i]) for i in range(len(x))]            
+
+        if T % int(T_step * 1/(T_step/100)) == 0:
+            print("Temperature {} K".format(T))
+            
         for i in range(len(x)):
             x_dash[i] = random.uniform(x[i]-h[i],x[i] + h[i])
 
-        del_f = func(*x_dash)- func(*x) 
+        del_f = np.array(func(*x_dash)) - np.array(func(*x)) 
         p_acc = Thermal(del_f,T)
+
         
         if p_acc > 1 : # if next energy value is smaller, then update
+            theta_steps.append(x[0])
+            mass_steps.append(x[1])
+
             for i in range(len(x)):
                 x[i] = x_dash[i]
-                if x_dash[i] < 1: # TODO: maybe 1 isn't the best value to use!
+                if x_dash[i] < 1: #TODO: maybe 1 isn't the best value to use!
                     h[i] = x_dash[i]
                 else: 
                     pass 
-#                values.append(x)
             
             success_count +=1
         else:
             pass 
 
         t_values.append(x_dash[0])
-        T = round(T - T_step,10)        
+        T = round(T-T_step,10)      
         count+=1
         
+        
+#    print(np.unique(values))
     NLL_value = func(*x) 
     
-#    [print(x[i]) for i in range(len(x))] 
-#    print(NLL_value)
+    [print(x[i]) for i in range(len(x))] 
     print("Efficiency = {:.4f}%".format(success_count/count * 100))
     
-    return t_values
-#%% Simulated Annealing with NLL 
+    print(theta_steps)
     
-Simulated_Annealing(NLL_simple,N = 2,T_start = 200,T_step = 1,xy_step = [0.3,1e-3],
-                    guesses = [[0.5,0.8],[1e-3,3e-3]])
+    plt.plot(theta_steps,mass_steps)    
+    plt.figure()
+    NLL_theta = NLL(x[0],x[1])
+    samp_x = np.linspace(0,2*np.pi,1000)
+    plt.plot(samp_x,NLL(samp_x,x[1]))
+    plt.plot(x[0], NLL_theta,'x')
+    return #t_values
 
-#%%
-def NLL_Cross_Section(theta_values,del_m,cross_a):
 
-    def survival_probability_1(E,theta,del_mass_square,L):
-        coeff = 1.267 * del_mass_square * L  / E
-        P = 1 - np.sin(2*theta)**2 * np.sin(coeff) **2
-        return P
+#%% 2D Simulated Annealing with NLL 
     
-    def cross_section(E,a):
-        return 1 + a * E
-    
-    def oscillated_prediction_1(thetas,masses,cross_rates):
-        # Calculate probabiliites of oscillation
-        probs = survival_probability_1(energies,thetas,masses,L)
-        
-        cross_sections = cross_section(energies,cross_a)
-        
-        # Obtain unoscillated rates from data grame
-        unosc_rates = data["unoscillated_rate"].tolist()
-        
-        # Convert to numpy arrays
-        probs = np.array(probs)
-        unosc_rates = np.array(unosc_rates)
-        cross_sections = np.array(cross_sections)
-        
-        # Find oscillated rates
-        osc_rates = probs * unosc_rates * cross_sections
-        
-        return [osc_rates]
-    
-    rates = oscillated_prediction_1(thetas=theta_values,masses=del_m,
-                                    cross_rates = cross_a)
-    k = oscillated
-    
-    NLL_value = []
-    
+Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 0.1,xy_step = [0.3,1e-3],
+                    guesses = [[0.7,0.8],[1e-3,3e-3]])
 
-#    print(rates)
-    for j in range(len(rates)):
-        tmp = []
-        l  = rates[j]
-
-        for i in range(len(l)):
-            
-#            print(k)
-            if k[i] != 0:
-                value = l[i] - k[i] + k[i] * np.log10(k[i]/l[i])
-                tmp.append(value)
-            else:   
-                pass
-
-        NLL_value.append(sum(tmp))
-        
-    return NLL_value[0]  
-    
-#
-Simulated_Annealing(NLL_Cross_Section,N = 3,T_start = 1000,T_step = 0.01,
-                    xy_step = [0.3,1e-3,0.2],guesses = [[0.5,0.8],[1e-3,3e-3],[0.5,1]])
+#%% 3D Simulated Annealing with Cross Section
+# 1000,0.01
+Simulated_Annealing(NLL,N = 3,T_start = 100,T_step = 0.1,
+                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]])
 #    
 #%% Test Functions
 
@@ -656,7 +634,7 @@ Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
     #TODO: Comment on cross section?
     #TODO: comment Error as pi/4?
     
-    #TODO: Plot sim annealing steps
+    #TODO: plot colour map 
     #TODO: Standardize answers?
     #TODO: Verify step sizes of temperature, 
     #TODO: Uncertainty on mass? on theta? from simulated annealing
