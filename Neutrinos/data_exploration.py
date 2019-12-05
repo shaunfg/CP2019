@@ -15,7 +15,10 @@ from scipy.interpolate import lagrange
 from scipy.interpolate import interp1d
 from numpy.polynomial.polynomial import Polynomial
 import random
+import os
 
+
+os.chdir("/Users/ShaunGan/Desktop/computational-physics/Neutrinos")
 #%%
 # 3.1 The data
 def read_data(filename):
@@ -36,7 +39,9 @@ def read_data(filename):
     df = df.astype(float)
     return df
 
-data = read_data("//icnas3.cc.ic.ac.uk/sfg17/Desktop/Computational Physics/Neutrinos/data.txt")
+#data = read_data("//icnas3.cc.ic.ac.uk/sfg17/Desktop/Computational Physics/Neutrinos/data.txt")
+
+data = read_data("data.txt")
     
 #%%
 # Guess Parameters
@@ -509,7 +514,26 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
         k_b = 1.38e-23
         return np.exp(- E / (k_b * T))
     
+    def PCS(T_o,T_f,T_step,i):
+        """
+        probabilistic cooling scheme
+        """
+        N = abs(T_f - T_o) / T_step
+        PE = 0.3
+        PL = 0.29
+        a = 0.01
+        
+        A = (T_o - T_f)*(N+1)/N
+        B = T_o - A
+        T_i = (A/(i+1)+B)*PE + (a*T_o/np.log(1+i))*PL
+        
+    #    print(i,N)
+        
+        return T_i
+
+    
     t_values = []
+    m_values = []
     
     x = [0]* N
     x_dash = [0] * N
@@ -519,25 +543,29 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
     for i in range(len(x)):
         x[i] = random.uniform(guesses[i][0],guesses[i][1])
     
-    T = T_start
     success_count = 0
-    count = 0
+    count = 1
+    T = T_start
+
     
     theta_steps = []
     mass_steps = []
     
-    while T > 0:
+    
+    print("Temperature {:.2f} K".format(T))
+    while T > 1e-10:
 
-        if T % int(T_step * 1/(T_step/100)) == 0:
-            print("Temperature {} K".format(T))
+        if count % 1000 == 0:
+            print("Temperature {:.2f} K".format(T))
+            t_values.append(x_dash[0])
+            m_values.append(x_dash[1])
             
         for i in range(len(x)):
             x_dash[i] = random.uniform(x[i]-h[i],x[i] + h[i])
         
         if limit != None:
-            
             while x_dash[0] >limit:
-                x_dash[0] = random.uniform(x[0]-h[0],x[0] + h[0])
+                x_dash[0] = random.uniform(x[0]-h[0],limit)
 
         
         del_f = np.array(func(*x_dash)) - np.array(func(*x)) 
@@ -545,8 +573,7 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
 
         
         if p_acc > 1 : # if next energy value is smaller, then update
-            theta_steps.append(x[0])
-            mass_steps.append(x[1])
+#            print("here)
 
             for i in range(len(x)):
                 x[i] = x_dash[i]
@@ -559,37 +586,45 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
         else:
             pass 
 
-        t_values.append(x_dash[0])
-        T = round(T-T_step,10)      
+
+        T = PCS(T_start,0,T_step,count)
         count+=1
         
         
+    t_values.append(x_dash[0])
+    m_values.append(x_dash[1])
 #    print(np.unique(values))
     NLL_value = func(*x) 
+    
+    print(NLL_value)
     
     [print(x[i]) for i in range(len(x))] 
     print("Efficiency = {:.4f}%".format(success_count/count * 100))
     
     print(theta_steps)
     
-    plt.plot(theta_steps,mass_steps)    
+    plt.plot(t_values,mass_steps)    
     plt.figure()
-    NLL_theta = NLL(x[0],x[1])
-    samp_x = np.linspace(0,2*np.pi,1000)
-    plt.plot(samp_x,NLL(samp_x,x[1]))
-    plt.plot(x[0], NLL_theta,'x')
+    plot_theta(x[1])
+    plt.plot(x[0], NLL(x[0],x[1]),'x')
     return #t_values
 
 
 #%% 2D Simulated Annealing with NLL 
-Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 0.01,xy_step = [0.3,1e-3],
+Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 1,xy_step = [0.3,1e-3],
                     guesses = [[0.5,0.7],[1e-3,3e-3]],limit = np.pi/4)
 
 #%% 3D Simulated Annealing with Cross Section
-# 1000,0.01
-Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 0.01,
+ 
+Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 1,
                     xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]]
                     ,limit = np.pi/4)
+
+# Quick Run 
+#Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 1,
+#                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]]
+#                    ,limit = np.pi/4)
+
 #    
 #%% Test Functions
 
@@ -634,8 +669,8 @@ Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
 
 """
     #TODO: Comment on merit of both methods of error
-"""
 
+"""
 """
     #TODO: Comment on annealing better than univariate?
 """
