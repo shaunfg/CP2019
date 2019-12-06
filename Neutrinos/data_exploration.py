@@ -5,20 +5,19 @@ Created on Mon Nov 18 19:10:25 2019
 
 @author: ShaunGan
 """
-
+import os
+os.chdir("/Users/ShaunGan/Desktop/computational-physics/Neutrinos")
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import warnings
-from scipy.interpolate import lagrange
-from scipy.interpolate import interp1d
+from scipy.interpolate import lagrange,interp1d
 from numpy.polynomial.polynomial import Polynomial
 import random
-import os
+import warnings
 
+from plot_functions import plot_mass,plot_theta,plot_color_map,plot_steps
 
-os.chdir("/Users/ShaunGan/Desktop/computational-physics/Neutrinos")
 #%%
 # 3.1 The data
 def read_data(filename):
@@ -40,9 +39,10 @@ def read_data(filename):
     return df
 
 #data = read_data("//icnas3.cc.ic.ac.uk/sfg17/Desktop/Computational Physics/Neutrinos/data.txt")
-
 data = read_data("data.txt")
+#data = read_data("chris_data.txt")
     
+
 #%%
 # Guess Parameters
 del_m_square = 2.4e-3 # adjusted to fit code data better
@@ -124,21 +124,15 @@ axes[1].plot(energies,predicted[0],color = '#ff7f0e',label = "Predicted Oscillat
 axes[1].legend()
 
 #%%
-
 def NLL(theta_values,del_m,cross_a = 0):
-#    print(theta_values)
     rates = oscillated_prediction(thetas=theta_values,masses=del_m,cross_a=cross_a)
     k = oscillated
     
     NLL_value = []
-    
     for j in range(len(rates)):
         tmp = []
         l  = rates[j]
-
         for i in range(len(l)):
-            
-#            print(k)
             if k[i] != 0:
                 value = l[i] - k[i] + k[i] * np.log10(k[i]/l[i])
                 tmp.append(value)
@@ -151,24 +145,12 @@ def NLL(theta_values,del_m,cross_a = 0):
     else:
         return NLL_value
 
-#%%
-# Calculate NLL 
+#%% Calculate NLL 
 NLL_thetas = NLL(thetas,del_m_square)
-def plot_theta(mass = del_m_square):
-    
-    thetas = np.arange(0,np.pi,0.002)
-    # Calculate NLL 
-    NLL_thetas = NLL(thetas,mass)
-    
-    # NLL against theta    
-    plt.figure()
-    plt.xlabel("Thetas")
-    plt.ylabel("NLL")
-    plt.plot(thetas, NLL_thetas)
-
 
 #%%
-def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
+def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4,
+              return_smallest = False):
     """
     generate f(x) from a set of x values,append the new x_3 value
     
@@ -209,22 +191,19 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
     vals_x = guess_x#[random.uniform(x_bottom,x_top) for x in range(3)]
     vals_y = NLL_func(vals_x)
 
-#    print(vals_x)
     x_3 = _find_next_point(vals_x,vals_y)
     x_3_last = x_3 +10
     vals_x.append(x_3)
     vals_y = NLL_func(vals_x)
 
-    
     end_count = 0
-    while end_count<2:  
+    while end_count<5:  
         vals_x.sort()        
         # Find maximum f(x) values
         max_idx = np.argmax(vals_y)
         
         # delete the smallest x value
         del vals_x[max_idx]
-#        print("-",vals_y)
                 
         # Finds the new f(x) values
         vals_y = NLL_func(vals_x)
@@ -232,19 +211,19 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
         # Finds the next minimum value
         x_3_last = x_3
         x_3 = _find_next_point(vals_x, vals_y)
-        print(x_3)
+
         # Check for negative curvature
         if NLL_func(x_3) > all(vals_y):
             warnings.warn("Interval has positive & negative curvature", Warning) 
-            
+#            print(vals_x)
             vals_x.append(x_3)
-
             # finds 2 additional values from max and min of interval
             x_values = np.linspace(min(vals_x),max(vals_x),4)[1:3]
             x_values = np.append(x_values,vals_x)
             
             # finds f(x)
             y_values = list(NLL_func(x_values))
+            
             # Gets indices of a sorted array
             indices = np.argsort(y_values)
             
@@ -255,6 +234,7 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
         else:
             # Stores the next smallest value
             vals_x.append(x_3)
+            
             # Calculates the f(x) of four x values
             vals_y = NLL_func(vals_x)
         
@@ -262,12 +242,16 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4):
             end_count +=1
         else:
             end_count = 0
-
-    max_idx = np.argmax(vals_y)
-    del vals_x[max_idx]      
-    vals_y = NLL_func(vals_x)
-
-    return vals_x,vals_y
+            
+    if return_smallest == True:
+        return x_3
+    else:
+        
+        max_idx = np.argmax(vals_y)
+        del vals_x[max_idx]      
+        vals_y = NLL_func(vals_x)
+    
+        return vals_x,vals_y
 #%%
 # Parabolic Minimise
 vals_x,vals_y = Parabolic(IC=del_m_square,guess_x = [0.2,0.4,0.6],func = NLL)
@@ -288,14 +272,17 @@ def Error_abs_addition(variables,NLL_values, min_val_x,min_NLL,above_min):
     """
     # Form pandas datraframe
     comparison_df = pd.DataFrame({"Var":variables,"NLL":NLL_values})
-    # Localise to first minimum
-    
-    comparison_df = comparison_df.loc[(comparison_df.Var < np.pi/4)]
+    # Localise to first minimum    
+#    comparison_df = comparison_df.loc[(comparison_df.Var < np.pi/4)]
     comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Var < 1.5)]
+    
+    print(comparison_df)
     
     # Finds LHS and RHS of the minimum
     LHS = comparison_df.loc[comparison_df.Var < min_val_x]
     RHS = comparison_df.loc[comparison_df.Var > min_val_x]
+    
+    print(min_val_x)
     
     # Interpolate to find continous value
     func_LHS = interp1d(LHS["NLL"],LHS["Var"]) # Flipped to inverse function
@@ -313,7 +300,7 @@ std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
 #%%
 def Error_Curvature(unoscillated_rates,measured_events,parabolic_x,parabolic_y):    
     # Calculate second derivative of Lagrange polynomial fit
-    x = parabolic_x# 
+    x = parabolic_x
     y = parabolic_y
     
     # Based on the parabolic minimiser
@@ -338,10 +325,8 @@ def Error_2nd_Dev(unoscillated_rates,measured_events,del_mass_square,IC,paraboli
     Params:
         IC = tuple of del_mass_square,L,energies
     """
-    
     # Find minimum theta and minimum NLL
     min_val = min(parabolic_x)
-    min_NLL = min(parabolic_y)
     
     L,E = IC
     
@@ -408,19 +393,6 @@ plt.plot(points_curv,NLL_points_curv,'x',label = "Curvature Error")
 plt.plot(points_dev,NLL_points_dev,'x',label = "2nd Dev Curvature Error")
 plt.legend()
 
-#%%
-# Two dimensional minimisation
-def plot_mass(theta = np.pi/4):
-    masses = np.linspace(0,5e-3,1000)
-    NLL_masses = NLL(theta,masses)
-    
-    plt.figure()
-    plt.plot(masses,NLL_masses)
-    plt.xlabel("$\Delta m^2$")
-    plt.ylabel("NLL")
-    plt.title("NLL against delta mass squared")
-#    plt.plot(0.0026026,NLL(np.pi / 4,0.0026026),'x')
-
 #%% Two Dimensional Minimisation (Section 4)
 def Univariate(func,guess_a,guess_b):
     min_x_mass = guess_a
@@ -453,13 +425,12 @@ def Univariate(func,guess_a,guess_b):
         
 #        print(thetas)
 
-
-    return min_x_mass,min_y_mass,min_x_thetas,min_y_t, mass_step,theta_step
+    return [min_x_mass,min_y_mass,min_x_thetas,min_y_t, mass_step,theta_step]
 
 
 # Obtain Univariate minimisation    
-a,b,c,d,e,f = Univariate(func = NLL,guess_a = [1.5e-3,2e-3,3e-3],guess_b =[0.2, 0.5, 1])
-min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas,mass_step,theta_step = (a,b,c,d,e,f)
+values = Univariate(func = NLL,guess_a = [1.5e-3,2e-3,3e-3],guess_b =[0.2, 0.5, 1])
+min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas,mass_step,theta_step = tuple(values)
 
 # Find Minimum values of masses and thetas
 min_mass_2D = min(min_masses_2D)
@@ -478,60 +449,33 @@ print("Minimum NLL 2D Univariate Minimiser = {:.4f}".format(min(min_NLL_thetas))
 plt.figure()
 plt.plot(theta_step,mass_step)
 
-plot_mass(theta = min(min_thetas_2D))
+plot_mass(func = NLL,theta = min(min_thetas_2D))
 plt.plot(min(min_masses_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 
-plot_theta(mass = min(min_masses_2D))
+plot_theta(func= NLL,mass = min(min_masses_2D))
 plt.plot(min(min_thetas_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
-
-#%% Plot Colour map
-
-def plot_color_map(x,y,func):
-    Z = []
-    for i in range(len(x)):
-        Z.append([func(x[j],y[i]) for j in range(len(y))])
-    
-    fig,axes = plt.subplots(1,1)
-    
-    c = axes.imshow(Z,origin="lower",interpolation = "None",aspect = "auto",
-                    extent = [min(x),max(x),min(y),max(y)],cmap = 'plasma')
-    
-    plt.xlabel("$\Theta$")
-    plt.ylabel("$\Delta m^2$")
-    plt.title("NLL colour map of $\Delta m^2$ and $\Theta$")
-    
-    fig.colorbar(c,ax=axes, label='NLL')
-#    print("\n",Z)
-   
-#plot_color_map(np.linspace(0,np.pi/2,100),np.linspace(0,5e-3,100),NLL)
-plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
 
 
 #%% Simulated Annealing 
-def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
+def Simulated_Annealing(func,N,T_start,T_div,xy_step,guesses,limit = None,
+                        PCS_mode = True,PE =0.3, PL = 0.29):
     
     def Thermal(E,T):
         k_b = 1.38e-23
         return np.exp(- E / (k_b * T))
     
-    def PCS(T_o,T_f,T_step,i):
+    def PCS(T_o,T_f,T_div,i):
         """
         probabilistic cooling scheme
         """
-        N = abs(T_f - T_o) / T_step
-        PE = 0.3
-        PL = 0.29
+        N = abs(T_f - T_o) / T_div
         a = 0.01
         
         A = (T_o - T_f)*(N+1)/N
         B = T_o - A
         T_i = (A/(i+1)+B)*PE + (a*T_o/np.log(1+i))*PL
-        
-    #    print(i,N)
-        
         return T_i
 
-    
     t_values = []
     m_values = []
     
@@ -547,92 +491,85 @@ def Simulated_Annealing(func,N,T_start,T_step,xy_step,guesses,limit = None):
     count = 1
     T = T_start
 
-    
-    theta_steps = []
-    mass_steps = []
-    
-    
-    print("Temperature {:.2f} K".format(T))
-    while T > 1e-10:
+    print("Starting Temperature {:.2f} K".format(T))
+    while T > 1e-5:
 
         if count % 1000 == 0:
-            print("Temperature {:.2f} K".format(T))
+            print("Temperature {:.4f} K".format(T))
             t_values.append(x_dash[0])
             m_values.append(x_dash[1])
             
         for i in range(len(x)):
-            x_dash[i] = random.uniform(x[i]-h[i],x[i] + h[i])
-        
+            x_dash[i] = random.gauss(x[i],h[i])
+
         if limit != None:
             while x_dash[0] >limit:
                 x_dash[0] = random.uniform(x[0]-h[0],limit)
 
-        
         del_f = np.array(func(*x_dash)) - np.array(func(*x)) 
         p_acc = Thermal(del_f,T)
-
         
-        if p_acc > 1 : # if next energy value is smaller, then update
-#            print("here)
-
+        if p_acc > random.uniform(0,1):# if next energy value is smaller, then update
             for i in range(len(x)):
-                x[i] = x_dash[i]
-                if x_dash[i] < 1: #TODO: maybe 1 isn't the best value to use!
-                    h[i] = x_dash[i]
-                else: 
-                    pass 
-            
+                x[i] = x_dash[i]            
             success_count +=1
+            t_values.append(x[0])
+            m_values.append(x[1])
+
         else:
             pass 
-
-
-        T = PCS(T_start,0,T_step,count)
+        
+        if PCS_mode == False:
+            T -= T_div
+        else:
+            T = PCS(T_start,0,T_div,count)
         count+=1
         
-        
-    t_values.append(x_dash[0])
-    m_values.append(x_dash[1])
-#    print(np.unique(values))
+    t_values.append(x[0])
+    m_values.append(x[1])
+    
     NLL_value = func(*x) 
-    
-    print(NLL_value)
-    
-    [print(x[i]) for i in range(len(x))] 
-    print("Efficiency = {:.4f}%".format(success_count/count * 100))
-    
-    print(theta_steps)
-    
-    plt.plot(t_values,mass_steps)    
-    plt.figure()
-    plot_theta(x[1])
-    plt.plot(x[0], NLL(x[0],x[1]),'x')
-    return #t_values
+    print("Minimum function value = ",NLL_value)
+    print("Minimum Values = ",x)
 
+    print("Efficiency = {:.4f}%".format(success_count/count * 100))          
+    return x,[t_values,m_values]#t_values
 
 #%% 2D Simulated Annealing with NLL 
-Simulated_Annealing(NLL,N = 2,T_start = 1000,T_step = 1,xy_step = [0.3,1e-3],
-                    guesses = [[0.5,0.7],[1e-3,3e-3]],limit = np.pi/4)
+min_p,steps = Simulated_Annealing(NLL,N = 2,T_start = 1000,T_div = 1,xy_step = [0.1,0.5e-3],
+                    guesses = [[0.7,0.8],[2e-3,3e-3]])
+
+plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
+plot_steps(steps[0],steps[1],"$ \Theta_{23}$","$\Delta m_{23}^2$","Simulated Annealing for NLL")
+plt.legend(loc=1, prop={'size': 12})
+
+#plt.figure()
+#plot_theta(min_p[1])
+#plt.plot(min_p[0], NLL(del_m = min_p[1]),'x')
 
 #%% 3D Simulated Annealing with Cross Section
  
-Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 1,
-                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]]
-                    ,limit = np.pi/4)
+min_p,steps = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
+                    xy_step = [0.1,0.5e-3,0.1],guesses = [[0.7,0.8],[2e-3,3e-3],[0.3,0.35]])
 
-# Quick Run 
-#Simulated_Annealing(NLL,N = 3,T_start = 1000,T_step = 1,
-#                    xy_step = [0.3,1e-3,0.2],guesses = [[0.7,0.8],[1e-3,3e-3],[0.5,1]]
-#                    ,limit = np.pi/4)
+plt.figure()
+plot_theta(*min_p[1:])
+plt.plot(min_p[0], NLL(*min_p),'x')
 
-#    
-#%% Test Functions
+#%%
+thetas_check = []
+mass_check = []
+cross_check = []
 
-def parabola(x,y):
-    x = np.array(x)
-    y = np.array(y)
-    return (x-1)**2 + (y-1)**2
+for i in range(10):
+    min_p = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
+                        xy_step = [0.1,0.5e-3,0.1],guesses = [[0.7,0.8],[2e-3,3e-3],[0.3,0.35]])
 
+    thetas_check.append(min_p[0])
+    mass_check.append(min_p[1])
+    cross_check.append(min_p[2])
+    
+#%% Test Function: Ackley
 def Ackley(x,y):
     x = np.array(x)
     y = np.array(y)
@@ -645,32 +582,40 @@ plt.plot(sample_x, Ackley(sample_x,0))
 
 # Parabolic minimisaition
 test_x, test_y = Parabolic(guess_x = [-5,0,5],func = Ackley,param = "1D_general")
-print(test_x)
-
-test_x, test_y = Parabolic(guess_x = [-5,0,5],func = parabola,param = "1D_general")
-print(test_x)
+print("1D Parabolic Min for Ackley x = {} where (y = 0)".format(min(test_x)))
 
 # Univariate minimisation
-a,b,c,d = Univariate(func = parabola,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
-print("h343",min(a),min(c))
+vals = Univariate(func = Ackley,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
+print("2D Univariate Min for Ackley: x = {},y = {}".format(min(vals[0]),min(vals[2])))
 
-a,b,c,d = Univariate(func = Ackley,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
+#%% Test Function: Parabola
+def parabola(x,y):
+    x = np.array(x)
+    y = np.array(y)
+    return (x-1)**2 + (y)**2
 
-print("h343",min(a),min(c))
+test_x = Parabolic(guess_x = [-5,0,5],func = parabola,param = "1D_general",
+                           return_smallest = True)
+print("1D Parabolic Min for 2D Parabola x = {} where (y = 0)\n".format(test_x))
 
-# Simulated Annealing test with Ackley function 
-Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
-                      guesses = [[-5,5],[-5,5]])
+vals = Univariate(func = parabola,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
+print("2D Univariate Min for Parabola: x = {},y = {}".format(min(vals[2]),min(vals[1])))
 
+#%% Simulated Annealing test with Ackley function 
+#min_p,steps = Simulated_Annealing(Ackley,N = 2,T_start = 100,T_div =0.01,xy_step = [0.2,0.2],
+#                      guesses = [[-5,5],[-5,5]],PE = 0.8,PL = 0.1)
 
+plot_color_map(np.linspace(-5,5,100),np.linspace(-5,5,100),Ackley)
+plot_steps(steps[0],steps[1],"x","y","Simulated Annealing for Ackley")
+plt.legend(loc=1, prop={'size': 12})
 #%%
     #TODO: comment why do m first -- plot graphs
 """
-
+m very bumpy, so  
 """
     #TODO: Comment on merit of both methods of error
-
 """
+
 """
     #TODO: Comment on annealing better than univariate?
 """
@@ -679,5 +624,4 @@ Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_step = 0.01,xy_step = [-5,5],
     #TODO: Comment on cross section?
     #TODO: comment Error as pi/4?
     
-    #TODO: Verify step sizes of temperature, 
     #TODO: Uncertainty on mass? on theta? from simulated annealing
