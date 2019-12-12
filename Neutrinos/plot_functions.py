@@ -105,17 +105,21 @@ def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,std_t_dev,
     
     plt.xlim(0.6,0.8)
 
-def plot_rates(energies,unoscillated,oscillated,predicted,
-               val = ('$\\pi/4$', '2.4e-3')):
+def plot_rates(energies,unoscillated,oscillated,predicted,min_p):
+    val = tuple([round(x,4) for x in min_p])
 
-    fig,axes = plt.subplots(2,1,figsize = (9,10))
+    fig,axes = plt.subplots(2,1,figsize = (9,10),sharex = True)
     
-    fig.suptitle("Rates against energies for $\Theta_{23} = $%s, "
-                "$\Delta m_{23}^2 = $ %s"%val,fontsize=18)
+    title = fig.suptitle("Rates against energies for $\Theta_{23} = $%s, "
+                "$\Delta m_{23}^2 = $ %s, " r"$\frac{dCS}{dE}$ = %s, "
+                "C = %s"%val,fontsize=18)
+    fig.tight_layout()
+    title.set_y(1.05)
+#    fig.subplots_adjust(top=0.8)
     
     # Unoscillated simulated data 
     axes[0].bar(energies,unoscillated,width = 0.05)
-    axes[0].set_xlabel("Energies/GeV")
+#    axes[0].set_xlabel("Energies/GeV")
     axes[0].set_ylabel("Rates")
     axes[0].set_title("Unoscillated Rates")
     

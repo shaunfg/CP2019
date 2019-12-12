@@ -1,0 +1,9 @@
+Minimum theta = 0.7295 +/- 0.0031
+Minimum mass = 2.865e-3 +/- 0.005e-3
+Minimum cross section = 0.7447 +/- 0.0063
+Minimum NLL = -113.262 +/- 0.014
+
+Univariate
+Minimum theta = 0.7525 +/- 0.0130
+Minimum mass = 2.603e-3 +/- 0.037e-3
+Minimum NLL = 58.181
