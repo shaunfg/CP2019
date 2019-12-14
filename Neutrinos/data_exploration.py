@@ -672,6 +672,16 @@ print("Minimum mass = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
 print("Minimum NLL = {:.4f}".format(min(min_NLL_thetas)))
 print("2nd Dev Error: Change in Curvature = {}".format(std_t_dev_2D))
 
+#%% Comment why do m first -- plot graphs
+"""
+Delta m square was minimised before minimising theta. 
+
+This is because NLL against delta m square displayed many more local minima 
+    when theta was near pi/4. Setting a low guess theta first (~0.1), produces 
+    a smoother function for NLL against delta m square, reducing the chances of 
+    getting stuck in a local minima, increasing the speed of the method. 
+    
+"""
 #%% Verify Univariate minimum values using plots
 
 # Plot steps taken by Univariate
@@ -874,11 +884,13 @@ print("Minimum mass = {:.7f} + {}".format(min_p[1],np.round(stds[1],7)))
 print("Minimum cross section = {:.4f} + {}".format(min_p[2],np.round(stds[2],4)))
 print("Minimum NLL = {:.4f}".format(min_NLL))
 
-#%% Plot rates against energy to see if parameters fit measured data
+#%% Plots to verify 3D Simulated Annealing
+
+#Plot rates against energy to see if parameters fit measured data
 predicted = oscillated_prediction(*min_p)
 plot_rates(energies,oscillated,predicted,min_p)
 
-#%% Plot steps for 3D Simulated Annealing
+# Plot steps for 3D Simulated Annealing
 plot_color_map(np.linspace(0,np.pi/2,100),np.linspace(0,5e-3,100),NLL)
 plot_steps(steps[0],steps[1],"$ \Theta_{23}$","$\Delta m_{23}^2$",
            "Accepted Steps for Simulated Annealing for NLL")
@@ -914,49 +926,58 @@ min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 4,T_start = 1000,T_div = 1,
 #%% Test Function: Ackley
             
 def Ackley(x,y):
+    """
+    Ackely Function, created to test minimisers. 
+    """
     x = np.array(x)
     y = np.array(y)
     A = -20 * np.exp(-0.2 * np.sqrt(0.5 * (x**2 + y**2)))
     B = - np.exp(0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y)))
     return A + B + np.exp(1) + 20
 
+# Generate sample data to display plot
 sample_x = np.linspace(-5,5,1000)
 plt.plot(sample_x, Ackley(sample_x,0))
+plt.title("Ackley Function")
 
-# Parabolic minimisaition
+# Parabolic minimisation
 test_x, test_y = Parabolic(guess_x = [-5,0,5],func = Ackley,param = "1D_general")
-print("1D Parabolic Min for Ackley x = {} where (y = 0)".format(min(test_x)))
 
 # Univariate minimisation
 test = Univariate(func = Ackley,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
-print("2D Univariate Min for Ackley: x = {},y = {}".format(min(test[0]),min(test[2])))
-
 
 # Simulated Annealing Minimisation
-min_p,min_NLL,steps = Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_div =1,xy_step = [0.2,0.2],
-                      guesses = [[-5,5],[-5,5]],PE = 0.3,PL = 0.29)
+p,y,steps = Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_div =1,
+                                          xy_step = [0.2,0.2],
+                                          guesses = [[-5,5],[-5,5]],
+                                          PE = 0.3,PL = 0.29)
 
+# Display Results
+print("\n1D Parabolic Min for Ackley x = {} where (y = 0)".format(min(test_x)))
+print("2D Univariate Min for Ackley: x = {},y = {}".format(min(test[0]),
+      min(test[2])))
+print("2D Simulated Annealing: x = {:.4f},y = {:.4f}".format(p[0],p[1]))
+
+# Plot colour map
 plot_color_map(np.linspace(-10,10,200),np.linspace(-10,10,200),Ackley)
 plot_steps(steps[0],steps[1],"x","y","Simulated Annealing for Ackley")
 plt.legend(loc=1, prop={'size': 12})
 
-#%% Test Function: sphere
+#%% Test Function: Sphere
 def sphere(x,y):
     x = np.array(x)
     y = np.array(y)
     return (x-1)**2 + (y)**2
 
+# Parabolic minimisation
 test_x = Parabolic(guess_x = [-5,0,5],func = sphere,param = "1D_general",
                            return_smallest = True)
+# Univariate minimisation
+test = Univariate(func = sphere,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
+
+# Display Results
+print("2D Univariate Min for sphere: x = {},y = {}".format(min(test[2]),min(test[1])))
 print("1D Parabolic Min for 2D sphere x = {} where (y = 0)\n".format(test_x))
 
-test = Univariate(func = sphere,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
-print("2D Univariate Min for sphere: x = {},y = {}".format(min(test[2]),min(test[1])))
 
 
-#%%
-#TODO: comment why do m first -- plot graphs
-"""
-m very bumpy, so better to find the minimum of m first and then theta, so that
-the minimisation doesn't get stuck in a local minima in m. 
-"""
