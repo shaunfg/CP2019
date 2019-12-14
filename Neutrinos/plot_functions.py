@@ -9,6 +9,7 @@ Created on Thu Dec  5 23:28:48 2019
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Plot NLL against delta m square
 def plot_mass(func,theta = np.pi/4,val = "$\pi$ / 4"):
     masses = np.linspace(0,5e-3,1000)
     NLL_masses = func(theta,masses)
@@ -19,15 +20,13 @@ def plot_mass(func,theta = np.pi/4,val = "$\pi$ / 4"):
     plt.ylabel("NLL")
     plt.title("NLL against $\Delta m^2_{23}$ for $\Theta_{23}$= %s" %val)
         
+# Plot NLL against theta
 def plot_theta(func,mass = 2.4e-3,cross_a = "None",val = "2.4e-3"):
     
     thetas = np.arange(0,np.pi,0.002)
     # Calculate NLL 
     NLL_thetas = func(thetas,mass,cross_a)
     
-    # NLL against theta    
-    
-#    print(NLL_thetas)
     plt.figure()
     plt.xlabel("$\Theta_{23}$")
     plt.ylabel("NLL")
@@ -39,7 +38,7 @@ def plot_theta(func,mass = 2.4e-3,cross_a = "None",val = "2.4e-3"):
         plt.title("NLL against $\Theta_{23}$ for $\Delta m^2_{23}$ = %s" 
                   r", $\frac{dCS}{dE}$ = %s"%val)
 
-
+# Plot 2D colour map
 def plot_color_map(x,y,func):
     Z = []
     for i in range(len(x)):
@@ -55,11 +54,9 @@ def plot_color_map(x,y,func):
     plt.title("NLL colour map of $\Delta m^2$ and $\Theta$")
     
     fig.colorbar(c,ax=axes, label='NLL')
-#    print("\n",Z)
-#plot_color_map(np.linspace(0,np.pi/2,100),np.linspace(0,5e-3,100),NLL)    
 
+# Plot steps taken by minimsers
 def plot_steps(t_values,m_values,xlabel,ylabel,title,font_size ="big"):
-#    plt.figure(figsize = (10,8))
     plt.plot(t_values,m_values,color = '#1f77b4',label = "Min-Trajectory")    
     plt.plot(t_values,m_values,'o',ms = 2,color = '#ff7f0e',label = "Step point")    
     plt.plot(t_values[-1],m_values[-1],'o', color = '#17becf',label = "Minimum point")  
@@ -73,6 +70,7 @@ def plot_steps(t_values,m_values,xlabel,ylabel,title,font_size ="big"):
         plt.title(title)
     return
 
+# Plot steps taken by Univariate
 def plot_steps_univariate(theta_step,mass_step):
     plt.figure()
     plt.plot(theta_step,mass_step)
@@ -81,6 +79,7 @@ def plot_steps_univariate(theta_step,mass_step):
     plt.ylabel("$\Delta m^2$")
     plt.title("Steps taken for Univariate minimisation of NLL")
     
+# Plot errors w.r.t to minimums
 def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,
              NLL,thetas,NLL_thetas,min_NLL_1D):
     
@@ -90,9 +89,6 @@ def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,
     points_curv = [min_theta_1D + x for x in [std_t_curv,-std_t_curv]]
     NLL_points_curv = NLL(np.array(points_curv),del_m_square)
     
-#    points_dev = [min_theta_1D + x for x in [std_t_dev,-std_t_dev]]
-#    NLL_points_dev = NLL(np.array(points_dev),del_m_square)
-
     # NLL against theta    
     plt.figure()
     plt.title("NLL against $ \Theta_{23}$ for $\Delta m^2 = 2.4e-3$")
@@ -102,11 +98,11 @@ def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,
     plt.plot(min_theta_1D,min_NLL_1D,'x',label = "Min NLL")
     plt.plot(points_abs,NLL_points_abs,'x',label = "Absolute Error")
     plt.plot(points_curv,NLL_points_curv,'x',label = "Curvature Error")
-#    plt.plot(points_dev,NLL_points_dev,'x',label = "2nd Dev Curvature Error")
     plt.legend(loc = 'upper right')
     
     plt.xlim(0.65,0.75)
 
+# Plot Energy against unoscillated rates
 def plot_unosc(energies,unoscillated,oscillated):
     fig,axes = plt.subplots(1,1,figsize = (8,5),sharex = True)
 
@@ -120,11 +116,11 @@ def plot_unosc(energies,unoscillated,oscillated):
     
     plt.legend()
     
+# Plot Energy against oscillated predicted rates
 def plot_rates(energies,oscillated,predicted,min_p):
     min_p = [round(x,4) for x in min_p]
 
     fig,axes = plt.subplots(1,1,figsize = (8,5))
-#    print(min_p)
     
     t = min_p[0]
     m = min_p[1]
