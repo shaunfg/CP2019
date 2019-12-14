@@ -19,19 +19,21 @@ def plot_mass(func,theta = np.pi/4,val = "$\pi$ / 4"):
     plt.ylabel("NLL")
     plt.title("NLL against $\Delta m^2_{23}$ for $\Theta_{23}$= %s" %val)
         
-def plot_theta(func,mass = 2.4e-3,cross_a = 0,val = "2.4e-3"):
+def plot_theta(func,mass = 2.4e-3,cross_a = "None",val = "2.4e-3"):
     
     thetas = np.arange(0,np.pi,0.002)
     # Calculate NLL 
     NLL_thetas = func(thetas,mass,cross_a)
     
     # NLL against theta    
+    
+#    print(NLL_thetas)
     plt.figure()
     plt.xlabel("$\Theta_{23}$")
     plt.ylabel("NLL")
     plt.plot(thetas, NLL_thetas)
     
-    if cross_a == 0:
+    if cross_a == "None":
         plt.title("NLL against $\Theta_{23}$ for $\Delta m^2_{23}$ = %s" %val)
     else:
         plt.title("NLL against $\Theta_{23}$ for $\Delta m^2_{23}$ = %s" 
@@ -79,7 +81,7 @@ def plot_steps_univariate(theta_step,mass_step):
     plt.ylabel("$\Delta m^2$")
     plt.title("Steps taken for Univariate minimisation of NLL")
     
-def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,std_t_dev,
+def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,
              NLL,thetas,NLL_thetas,min_NLL_1D):
     
     points_abs = [min_theta_1D + x for x in std_t_abs]
@@ -88,8 +90,8 @@ def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,std_t_dev,
     points_curv = [min_theta_1D + x for x in [std_t_curv,-std_t_curv]]
     NLL_points_curv = NLL(np.array(points_curv),del_m_square)
     
-    points_dev = [min_theta_1D + x for x in [std_t_dev,-std_t_dev]]
-    NLL_points_dev = NLL(np.array(points_dev),del_m_square)
+#    points_dev = [min_theta_1D + x for x in [std_t_dev,-std_t_dev]]
+#    NLL_points_dev = NLL(np.array(points_dev),del_m_square)
 
     # NLL against theta    
     plt.figure()
@@ -100,34 +102,52 @@ def plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,std_t_dev,
     plt.plot(min_theta_1D,min_NLL_1D,'x',label = "Min NLL")
     plt.plot(points_abs,NLL_points_abs,'x',label = "Absolute Error")
     plt.plot(points_curv,NLL_points_curv,'x',label = "Curvature Error")
-    plt.plot(points_dev,NLL_points_dev,'x',label = "2nd Dev Curvature Error")
+#    plt.plot(points_dev,NLL_points_dev,'x',label = "2nd Dev Curvature Error")
     plt.legend(loc = 'upper right')
     
-    plt.xlim(0.6,0.8)
+    plt.xlim(0.65,0.75)
 
-def plot_rates(energies,unoscillated,oscillated,predicted,min_p):
-    val = tuple([round(x,4) for x in min_p])
+def plot_unosc(energies,unoscillated,oscillated):
+    fig,axes = plt.subplots(1,1,figsize = (8,5),sharex = True)
 
-    fig,axes = plt.subplots(2,1,figsize = (9,10),sharex = True)
-    
-    title = fig.suptitle("Rates against energies for $\Theta_{23} = $%s, "
-                "$\Delta m_{23}^2 = $ %s, " r"$\frac{dCS}{dE}$ = %s, "
-                "C = %s"%val,fontsize=18)
-    fig.tight_layout()
-    title.set_y(1.05)
-#    fig.subplots_adjust(top=0.8)
-    
+
     # Unoscillated simulated data 
-    axes[0].bar(energies,unoscillated,width = 0.05)
-#    axes[0].set_xlabel("Energies/GeV")
-    axes[0].set_ylabel("Rates")
-    axes[0].set_title("Unoscillated Rates")
+    axes.bar(energies,unoscillated,width = 0.05,label = "Simulated Unoscillated Rates")
+    axes.set_xlabel("Energies/GeV")
+    axes.set_ylabel("Rates")
+    axes.set_title("Unoscillated Rates against Energy")
+    axes.bar(energies,oscillated,width = 0.05,alpha = 0.5,label = "Measured Oscillated Rates")
+    
+    plt.legend()
+    
+def plot_rates(energies,oscillated,predicted,min_p):
+    min_p = [round(x,4) for x in min_p]
+
+    fig,axes = plt.subplots(1,1,figsize = (8,5))
+#    print(min_p)
+    
+    t = min_p[0]
+    m = min_p[1]
+    
+    if len(min_p) ==2:
+        a = 0
+        C = 0
+    elif len(min_p) == 3:
+        a = min_p[2]
+        C = 0
+    else:
+        a = min_p[2]
+        C = min_p[3]
+
+    fig.tight_layout()
     
     # Measured oscillated data
-    axes[1].bar(energies,oscillated,width = 0.05,alpha = 0.5,label = "Measured Oscillated Data")
-    axes[1].set_xlabel("Energies/GeV")
-    axes[1].set_ylabel("Rates")
-    axes[1].set_title("Measured Data after oscillation")
-    axes[1].plot(energies,predicted[0],color = '#ff7f0e',label = "Predicted Oscillation Data")
-    axes[1].legend()
+    axes.bar(energies,oscillated,width = 0.05,alpha = 0.5,label = "Measured Oscillated Data")
+    axes.set_xlabel("Energies/GeV")
+    axes.set_ylabel("Rates")
+    axes.set_title("Rates against energies for $\Theta_{23} = $%s, "
+                "$\Delta m_{23}^2 = $ %s, " r"$\frac{dCS}{dE}$ = %s, "
+                "C = %s"%(t,m,a,C))
+    axes.plot(energies,predicted[0],color = '#ff7f0e',label = "Predicted Oscillation Data")
+    axes.legend()
     return

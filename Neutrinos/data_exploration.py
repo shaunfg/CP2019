@@ -3,6 +3,7 @@
 """
 Created on Mon Nov 18 19:10:25 2019
 
+
 @author: ShaunGan
 """
 import os
@@ -17,11 +18,19 @@ import random
 import warnings
 
 from plot_functions import plot_mass,plot_theta,plot_color_map,plot_steps
-from plot_functions import plot_rates,plot_std
+from plot_functions import plot_rates,plot_std, plot_unosc
 
-#%%
-# 3.1 The data
+#%% 3.1 The data
 def read_data(filename):
+    """
+    pandas is used to read the raw text file and output it as a pandas 
+        dataframe containing 3 columns: unoscillated rate, oscillated (measured)
+        rate, and energies,
+    -----------
+    Parameters:
+    -----------
+    filename: is the file name 
+    """
     # Reads data file into a dataframe
     data = pd.read_csv(filename)
     
@@ -40,11 +49,10 @@ def read_data(filename):
     return df
 
 #%%
-#data = read_data("//icnas3.cc.ic.ac.uk/sfg17/Desktop/Computational Physics/Neutrinos/data.txt")
+# Read Data
 data = read_data("data.txt")
-#data = read_data("chris_data.txt")    
-#data = read_data("matt_data.txt")
-# Guess Parameters
+
+# Set Guess Parameters
 del_m_square = 2.4e-3#4e-3 # adjusted to fit code data better
 L = 295
 t_IC = np.pi/4
@@ -58,46 +66,82 @@ unoscillated = np.array(data["unoscillated_rate"].tolist()) # simulated
 # Define tuple for more compact formatting
 ICs = (L,energies)
 
-#%% One Dimensional Minimisation (Section 3)
+#%% 3.2 Fit Function
 def survival_probability(E,theta,del_mass_square,L):
-    
+    """ 
+    Function for the survival probability of neutrino oscillations
+    -----------
+    Parameters:
+    -----------
+    E: energies bins
+    theta: mixing angle
+    del_mass_square: delta mass square
+    L: distance travelled, fixed at 295km. 
+    """
     coeff = 1.267 * del_mass_square * L  / E
     P = 1 - np.sin(2*theta)**2 * np.sin(coeff) **2
     return P
 
 #%%
 def cross_section(E,a,C):
-            return C + a * E    
+    """
+    Function for the cross section
+    -----------
+    Parameters:
+    -----------
+    E: Energies, 
+    a: alpha ~ cross section rate [d(cross section)/dE]
+    C: offset, set to zero. 
+    """
+    return C + a * E    
 
-def oscillated_prediction(thetas,masses, cross_a = 0,C = 0):
+def oscillated_prediction(thetas,masses, cross_a = "None",C = 0):
+    """
+    Predicts oscillation rates from unoscillated rates, by multiplying 
+        survival probability with unoscillated rates. 
+        
+    Conditional statements implemented to return a singular value or list of 
+        elements, depending on the nature of the input. Applied for all 3 
+        parameters. 
+    -----------
+    Parameters:
+    -----------
+    thetas: mixing angles
+    masses: delta mass square values
+    cross_a: cross section rate
+    C: offset, set to zero
+    """
+    
     # Calculate probabiliites of oscillation
     
-    if np.array(masses).size > np.array(thetas).size:
-        if isinstance(masses, (np.ndarray,list)) == True:
-            probs = [survival_probability(energies, thetas, masses[i], L) for i in
-                     range(len(masses))]
-        else:
-            raise ValueError("Unknown type")
-            
-    elif np.array(masses).size < np.array(thetas).size:
-        if isinstance(thetas,(np.ndarray,list)) == True:
-            probs = [survival_probability(energies,thetas[i],masses,L) for i in
-                     range(len(thetas))]
-        else:
-            raise ValueError("Unknown type")#     
-    else:
-        probs = [survival_probability(energies,thetas,masses,L)]       
-#    
+    # varying mass with other parameters constant
+    if np.array(masses).size > 1: 
+        probs = [survival_probability(energies, thetas, masses[i], L) for i in
+                 range(len(masses))]        
+        
+    # varying theta with other parameters constant    
+    elif np.array(thetas).size > 1:
+        probs = [survival_probability(energies,thetas[i],masses,L) for i in
+                 range(len(thetas))]
+    
+    # both theta, mass constant      
+    else:  
+        probs = [survival_probability(energies,thetas,masses,L)]     
+  
     # Obtain unoscillated rates from data grame
     unosc_rates = data["unoscillated_rate"].tolist()
     
-    # Convert to numpy arrays
+    # Convert to numpy arrays for element wise operations
     probs = np.array(probs)
     unosc_rates = np.array(unosc_rates)
     
     # Calculate cross sections
-    if cross_a == 0:
-        cross_sections = 1 #Returns it to the original parameters
+    if cross_a == "None":
+        cross_sections = 1 #Returns to the original parameters
+    
+    elif np.array(cross_a).size > 1:
+        cross_sections = [cross_section(energies,cross_a[i],C) for i in 
+                          range(len(cross_a))]
     else:
         cross_sections = cross_section(energies,cross_a,C)
 
@@ -105,94 +149,148 @@ def oscillated_prediction(thetas,masses, cross_a = 0,C = 0):
     osc_rates = probs * unosc_rates * cross_sections
     return osc_rates
 
-#%%
-del_m_square = 2.9e-3#4e-3 # adjusted to fit code data better
+#%% 3.2 Data Exploration -- Histograms
+del_m_square = 2.6e-3 # adjusted to fit code data better
 
 predicted = oscillated_prediction(t_IC,del_m_square)
-plot_rates(energies,unoscillated,oscillated,predicted,[t_IC,del_m_square,0,0])
+plot_unosc(energies,unoscillated,oscillated)
+plot_rates(energies,oscillated,predicted,[t_IC,del_m_square,0,0])
 
-#%%
-def NLL(theta_values,del_m,cross_a = 0,cross_C = 0):
+#%% 3.3 Likelihood Function
+def NLL(theta_values,del_m,cross_a = "None",cross_C = 0):
+    """
+    Negative log-likelihood function. Taking the minimum of this function will
+        provide model values for the parameters describing the neutrino
+        oscillation survival probabilities. 
+    -----------
+    Parameters:
+    -----------
+    theta_values: mixing angles  
+    del_m: delta mass square
+    cross_a: cross section rate
+    
+    --> Values above can be integers, floats, lists or np.arrays.
+    
+    C: offset, set to zero
+    """
     rates = oscillated_prediction(thetas=theta_values,masses=del_m,
                                   cross_a=cross_a,C = cross_C)
     k = oscillated
     
     NLL_value = []
     for j in range(len(rates)):
-        tmp = []
+        tmp = [] # Temporary list to find sum 
         l  = rates[j]
-
         for i in range(len(l)):
             
-            if k[i] != 0:
+            #if measured rates not zero, calculate log            
+            if k[i] != 0: 
                 value = l[i] - k[i] + k[i] * np.log(k[i]/l[i])
                 tmp.append(value)
-            else:   
-                pass
+            
+            # if measured rates zero, klog(k) --> 0, so ignore. 
+            else:
+                value = l[i]
+                tmp.append(value)
 
-        NLL_value.append(sum(tmp))
+        NLL_value.append(sum(tmp)) # Calculate sum of all values 
+    
+    #Return value depending on float/ list nature of inputs. 
     if len(NLL_value) ==1:
         return NLL_value[0]
     else:
         return NLL_value
 
-#%% Calculate NLL 
-NLL_thetas = NLL(thetas,del_m_square)
-
+#%% Estimate Minimum of Parameters
 plot_mass(func = NLL,theta = t_IC)
 plot_theta(func = NLL)
 
-#%%
-def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4,
+#%% 3.4 Minimise
+ 
+def Parabolic(guess_x,IC = None,func = None,param = 'theta',
               return_smallest = False):
     """
-    generate f(x) from a set of x values,append the new x_3 value
+    Parabolic minimiser to obtain the minimum of a function. Starting from 
+        three points, generates a new x_3 of lower f(x), keeps the three 
+        x vales with the lowest f(x) values. Iterates until convergence, 
+        where values found are constant at 15 decimal places. 
     
-    Parabolic minimiser is based on the intergral of the lagrange polynomial. 
+    If mixture of positive ang negative curvature, two additional points
+        generated between the range. The three points out of the five
+        with the lowest f(x) values are kept. 
     
-    find f(x) with all four values
-    save the smallest three values
+    Based on the intergral of the lagrange polynomial. 
+
+    -----------
+    Parameters:
+    -----------  
+    guess_x: list of three values, as initial guesses 
+    IC: Initial conditions, L and energies
+    func: function to minimise, NLL or test functions
+    param: 
+        'theta' - minimise in theta for NLL
+        'mass' - minimise in mass for NLL
+        '1D_general" - minimse in an arbitary parameter for arbitary function
+    return_smallest: returns the latest generated x_3 value if True,
+                        if False, returns last three points.
     """
 
     def _find_next_point(x_list, y_list):
         """
-        accepts list of x and y, each of 3 elements
+        Finds x_3, from x_{1,2,3} and y_{1,2,3}. Based on Lagrange Polynomials
+        -----------
+        Parameters:
+        -----------  
+        x_list,y_list: list of x and y, each of 3 elements
         """
+        # Extract x and y values
         x_0, x_1, x_2 = tuple(x_list)
         y_0, y_1, y_2 = tuple(y_list)
+        
+        # Calculate numerator and denominator
         num = (x_2 ** 2 - x_1 ** 2) * y_0 + (x_0 ** 2 - x_2 ** 2) * y_1 + (x_1 ** 2 - x_0 ** 2) * y_2
         denom = (x_2 - x_1) * y_0 + (x_0 - x_2) * y_1 + (x_1 - x_0) * y_2
+        
         if denom != 0:
             x_3 = 1 / 2 * num / denom
+
         else:
-            # if denomiator is zero, pick mid point aaaof x
+            # if denomiator is zero, pick mid point of x
             x_list = [x for x in x_list if x <= x_list[np.argmax(x_list)]]
             x_list = [x for x in x_list if x >= x_list[np.argmin(x_list)]]
             x_3 = x_list[0]
         return x_3
     
-#    IC = np.array(IC)
-
+    # Allows you to minimise in differen parameters, within one Parabolic func
     if param == "theta":
-        NLL_func = lambda k: func(np.array(k),IC)
+        Func = lambda k: func(np.array(k),IC)
     elif param == "mass":
-        NLL_func = lambda k: func(IC,np.array(k))
+        Func = lambda k: func(IC,np.array(k))
     elif param == "1D_general":
         y = 0
-        NLL_func = lambda k: func(k,y)
+        Func = lambda k: func(k,y)
     else:        
         raise ValueError("Invalid param type")
-    vals_x = guess_x#[random.uniform(x_bottom,x_top) for x in range(3)]
-    vals_y = NLL_func(vals_x)
+    
+    # Rename variables, and calculate NLL variables for 3 x-values
+    vals_x = guess_x
+    vals_y = Func(vals_x)
 
+    # Find next x_3 point 
     x_3 = _find_next_point(vals_x,vals_y)
     x_3_last = x_3 + 10
+    
+    # Append x_3 point and find f(x) for 4 x-values
     vals_x.append(x_3)
-    vals_y = NLL_func(vals_x)
-
+    vals_y = Func(vals_x)
+    
+    # Used to assess convergence 
     end_count = 0
+    
     while end_count<5:  
-        vals_x.sort()        
+        # Sort values. 
+        vals_x.sort()  
+        
         # Find maximum f(x) values
         max_idx = np.argmax(vals_y)
         
@@ -200,23 +298,26 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4,
         del vals_x[max_idx]
                 
         # Finds the new f(x) values
-        vals_y = NLL_func(vals_x)
+        vals_y = Func(vals_x)
 
         # Finds the next minimum value
         x_3_last = x_3
         x_3 = _find_next_point(vals_x, vals_y)
 
         # Check for mixture of negative and positive curvature
-        if NLL_func(x_3) > all(vals_y):
+        if Func(x_3) > all(vals_y):
+            
+            # Warn about positive and negative curvatures
             warnings.warn("Interval has positive & negative curvature", Warning) 
-#            print(vals_x)
+
             vals_x.append(x_3)
+
             # finds 2 additional values from max and min of interval
             x_values = np.linspace(min(vals_x),max(vals_x),4)[1:3]
             x_values = np.append(x_values,vals_x)
             
             # finds f(x)
-            y_values = list(NLL_func(x_values))
+            y_values = list(Func(x_values))
             
             # Gets indices of a sorted array
             indices = np.argsort(y_values)
@@ -230,8 +331,9 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4,
             vals_x.append(x_3)
             
             # Calculates the f(x) of four x values
-            vals_y = NLL_func(vals_x)
+            vals_y = Func(vals_x)
         
+        # If values are constant to 15 decimal places five times, means converged
         if round(x_3,15) == round(x_3_last,15):
             end_count +=1
         else:
@@ -240,10 +342,10 @@ def Parabolic(guess_x,IC = None,func = None,param = 'theta',limit= np.pi/4,
     if return_smallest == True:
         return x_3
     else:
-        
+        # Deletes largest x-value, and returns array of three values. 
         max_idx = np.argmax(vals_y)
         del vals_x[max_idx]      
-        vals_y = NLL_func(vals_x)
+        vals_y = Func(vals_x)
     
         return vals_x,vals_y
 #%%
@@ -254,47 +356,117 @@ vals_x,vals_y = Parabolic(IC=del_m_square,guess_x = [0.2,0.4,0.6],func = NLL)
 min_theta_1D = min(vals_x)
 min_NLL_1D = min(vals_y)    
 
-#%% Finding Errors on minimum
+print("1D Minimisation, theta = {:.4f}, NLL = {:.4f}".format(min_theta_1D,min_NLL_1D))
 
-def Error_abs_addition(variables,NLL_values,min_val_x,min_NLL,above_min):
-    """
-    Finds error by +/- 0.5, on the first minimum for a parabolic fit.
-    
-    Points are linearly interpolated. 
-    
-    min_val_x,min_NLL from parabolic minmised fit.
-    """
-    # Form pandas datraframe
-    comparison_df = pd.DataFrame({"Var":variables,"NLL":NLL_values})
-    # Localise to first minimum    
-    comparison_df = comparison_df.loc[(comparison_df.Var < np.pi/4)]
-    #TODO: do minus
-    
-    comparison_df = comparison_df.loc[(comparison_df.NLL < min_NLL + 2*above_min) & (comparison_df.Var < 1.5)]
-    
-#    print(comparison_df)
-    
-    # Finds LHS and RHS of the minimum
-    LHS = comparison_df.loc[comparison_df.Var < min_val_x]
-    RHS = comparison_df.loc[comparison_df.Var > min_val_x]
-    
-#    print(min_val_x)
-    
-    # Interpolate to find continous value
-    func_LHS = interp1d(LHS["NLL"],LHS["Var"]) # Flipped to inverse function
-    func_RHS = interp1d(RHS["NLL"],RHS["Var"]) # Flipped to inverse function
+#%% 3.5 Find Accuracy of Result
 
-    #Takes maximum value
-    values = np.array([func_LHS(min_NLL + 0.5)-min_val_x,func_RHS(min_NLL + 0.5)-min_val_x])
-    std_dev = values
+def Error_abs_addition(min_p,min_NLL,func = NLL):
+    """
+    Finds error on minimum from NLL fit, using principle that uncertainty
+        is determinined by + 0.5 from the minimum
+    
+    Points are linearly interpolated in order to extract value of x at 
+        minimum NLL + 0.5
         
-    return std_dev
+    Function extended to provide error in 2D and 3D. In higher dimensions,
+        only one variable is changed with the error found, whilst the other
+        values are kept constant. 
+        
+    -----------
+    Parameters:
+    -----------      
+    min_p: list of minimum values from each parameter, accepts list up to 3D
+    min_NLL: float value of the minimum calculated NLL value
+    func: function, set to NLL
+    """
+    
+    # Number of points for interpolation
+    acc = 1000 
+    
+    # Ranges to search, so that it includes NLL + 0.5
+    theta_range = 0.7
+    mass_range = 1e-3
+    cross_range = 0.5
+    above_min = 0.7
+    
+    # If theta is above pi/4 shift it back by pi/2 and take abs value
+    if min_p[0] > np.pi/4:
+        min_p[0] = abs(min_p[0] - np.pi/2)
 
-# Calculate error form +/- 0.5 through linear interpolation. 
-std_t_abs = Error_abs_addition(thetas,NLL_thetas,min_theta_1D,min_NLL_1D,0.7)
+    # Generate array values for thetas and masses, to interpolate
+    thetas = np.linspace(min_p[0]-theta_range,np.pi/4,acc)
+    masses = np.linspace(min_p[1]-mass_range,min_p[1]+mass_range,acc)
+    
+    # 2D
+    if len(min_p) == 2:
+        
+        # Generate functions 
+        NLL_func_t = lambda k: func(np.array(k),min_p[1])
+        NLL_func_m = lambda k: func(min_p[0],np.array(k))
+        
+        # Create list of functions and values
+        funcs = [NLL_func_t,NLL_func_m]
+        values = [thetas,masses]
+
+    # 3D
+    elif len(min_p) == 3:
+        
+        # Generate array values for cross sections,  to interpolate
+        crosses = np.linspace(min_p[2]-cross_range,min_p[2]+cross_range,acc)
+        
+        # Generate functions 
+        NLL_func_t = lambda k: func(np.array(k),min_p[1],min_p[2])
+        NLL_func_m = lambda k: func(min_p[0],np.array(k),min_p[2])
+        NLL_func_c = lambda k: func(min_p[0],min_p[1],np.array(k))
+        
+        # Create list of functions and values
+        funcs = [NLL_func_t,NLL_func_m,NLL_func_c]
+        values = [thetas,masses,crosses]
+        
+    else:
+        raise ValueError("Incorrect Dimensions")
+        
+    # Empty list to store stds. 
+    stds= []
+    
+    for i in range(len(min_p)) :
+        # Make Dataframe for each variable, for easier data manipulation
+        df = pd.DataFrame({"Var":values[i],"NLL":funcs[i](values[i])})
+        df = df.loc[(df.NLL < min_NLL + 2*above_min)]
+
+        # Locate values on the LHS and RHS of the minimum
+        LHS = df.loc[df.Var < min_p[i]]
+        RHS = df.loc[df.Var > min_p[i]]
+                
+        # Interpolate to find continous & exact value
+        func_LHS = interp1d(LHS["NLL"],LHS["Var"]) # Flipped to inverse function
+        func_RHS = interp1d(RHS["NLL"],RHS["Var"]) # Flipped to inverse function
+        
+        # Finds list of upper and lower error
+        std_dev = np.array([func_LHS(min_NLL + 0.5)-min_p[i],func_RHS(min_NLL + 0.5)-min_p[i]])
+        
+        # Stores in list stds, containing errors for all parameters. 
+        stds.append(list(std_dev))
+        
+    return stds
 
 #%%
-def Error_Curvature(unoscillated_rates,measured_events,parabolic_x,parabolic_y):    
+def Error_Curvature(unoscillated_rates,measured_events,parabolic_x,parabolic_y): 
+    """
+    Fits a 2nd order Lagrange polynomial Ax^2 + Bx +C, where the curvature A
+        is assessed to find the values of min NLL + 0.5.
+        
+    The equation Ax^2 = 0.5 is solved to find the values of x, as Bx and C
+        are both translational variables.
+        
+    -----------
+    Parameters:
+    -----------   
+    unoscillated_rates: unoscillated rates from the raw data file
+    measured_events: oscillated measured data
+    parabolic_x: final three x values from the parabolic minimiser
+    parabolc_y: f(parabolic_x), where f would be the NLL function
+    """
     # Calculate second derivative of Lagrange polynomial fit
     x = parabolic_x
     y = parabolic_y
@@ -308,21 +480,30 @@ def Error_Curvature(unoscillated_rates,measured_events,parabolic_x,parabolic_y):
     
     return std_theta
 
-# Calculate error from +/- 0.5 through fitting to second derivative  
-std_t_curv = Error_Curvature(unoscillated,oscillated,vals_x,vals_y)
-
-
 #%%
 def Error_2nd_Dev(unoscillated_rates,measured_events,del_mass_square,IC,parabolic_x,parabolic_y):
     """
-    Calculates error by finding difference in second derivatives. 
-    
-    Params:
-        IC = tuple of del_mass_square,L,energies
+    Calculates error by finding difference in second derivatives. For this
+        example, this was implemented with respect to theta, however as just
+        an indicative measure, the parameter chosen should not matter. 
+        
+    To be used generally, the second derivative for each parameter would need to
+        be found. 
+        
+    -----------
+    Parameters:
+    ----------- 
+    unoscillated_rates: unoscillated rates from the raw data file
+    measured_events: oscillated measured data
+    parabolic_x: final three x values from the parabolic minimiser
+    parabolc_y: f(parabolic_x), where f would be the NLL function
+    del_mass_square: delta mass square
+    IC: L, energies
     """
     # Find minimum theta and minimum NLL
     min_val = min(parabolic_x)
     
+    # Extract values
     L,E = IC
     
     # Calculate second derivative of theoretical NLL value
@@ -356,46 +537,101 @@ def Error_2nd_Dev(unoscillated_rates,measured_events,del_mass_square,IC,paraboli
     # Find difference in curvature value
     curvature_del = curvature_original - coefficients[0]
     
-    # Just consider curvature, ax**2 = 0.5
-    std_theta = np.sqrt(0.5/curvature_del)
-    
-    return std_theta
+    return curvature_del
 
+#%%
+
+# Calculate error form + 0.5 through linear interpolation. 
+std_t_abs = Error_abs_addition([min_theta_1D,del_m_square],min_NLL_1D)
+std_t_abs = std_t_abs[0]
+
+# Calculate error form + 0.5 through parabolic interpolation. 
+std_t_curv = Error_Curvature(unoscillated,oscillated,vals_x,vals_y)
+
+# Calculate error from + 0.5 through fitting to second derivative  
 std_t_dev = Error_2nd_Dev(unoscillated,oscillated,del_m_square,ICs,vals_x,vals_y)
 
-print("error 2nd dev", std_t_dev)
-#%%
-plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,std_t_dev,NLL,thetas,NLL_thetas,min_NLL_1D)
+# Plot Errors
+NLL_thetas = NLL(thetas,del_m_square)
+plot_std(min_theta_1D,del_m_square,std_t_abs,std_t_curv,NLL,thetas,NLL_thetas,min_NLL_1D)
 
 print("===========================")
 print("From 1D Parabolic Minimiser")
 print("===========================")
-print("Absolute Error: Min Theta = {:.6f} +/- {:.6f}".format(min_theta_1D,max(abs(std_t_abs))))
+print("Absolute Error: Min Theta = {:.6f} +/- {}".format(min_theta_1D,std_t_abs))
 print("Curvature Error: Min Theta = {:.6f} +/- {:.6f}".format(min_theta_1D,std_t_curv))
-print("2nd Dev Error: Min Theta = {:.6f} +/- {:.6f}".format(min_theta_1D,std_t_dev))
+print("2nd Dev Error: Change in Curvature = {}".format(std_t_dev))
 
-#%% Two Dimensional Minimisation (Section 4)
+#%% Comment Error as theta --> pi/4
+"""
+As the value of theta tends to pi/4, errors at this value would be incorrect 
+since it is a maxima and hence is followed by a negative curvature. 
+
+The values obtained for the next NLL value +1/2 would ignore the minimas below 
+and interpolate the fits incorrectly to provide inaccurate uncertainties in 
+theta.
+"""
+
+#%% Comment on merit of both methods of error
+"""
+The curvature method provided a more precise uncertainty for the parabolic 
+minimiser as it dealt specifically with parabolas. 
+
+The linear fit requires less paramters for implementation, but depends on the 
+accuracy used between points when interpolated. Although with a sufficiently
+high accuracy, the difference between methods would be small (at the cost of
+computation time).
+
+Both came out to give similar results within 1\% of each other. 
+
+Curvature was used for Univariate and linear was used for Simulated Annealing. 
+"""
+
+#%% 4.1 Univariate Method
+
 def Univariate(func,guess_a,guess_b):
+    """
+    Univariate Parabolic Minimiser method, applies the parabolic method in
+        1D to each parameter in turn, until convergence is achieved.
+    Iterates until convergence, where values found are constant at 15 decimal 
+        places.     
+    -----------
+    Parameters:
+    ----------- 
+    func: function
+    guess_a, guess_b: list of three values, as initial guesses
+    """
+    # Rename variables
     min_x_mass = guess_a
     min_x_thetas = guess_b
     
     # Find Radius
     R = np.sqrt(min(min_x_thetas)**2 + min(min_x_mass)**2)
-    R_last = R + 10
+    R_last = R + 10 # Arbitrary starting values
+    
+    # Used for convergence
     end_count = 0
     
+    # Store minimum value to show steps taken by univariate
     mass_step = [min(min_x_mass)]
     theta_step = [min(min_x_thetas)]
     
-    while end_count <3:        
-        min_x_mass,min_y_mass = Parabolic(func = func,IC=min(min_x_thetas), guess_x=min_x_mass,param = "mass")
-        mass_step.append(min(min_x_mass))
-        theta_step.append(min(min_x_thetas))
-    
-        min_x_thetas, min_y_t = Parabolic(func = func,IC=min(min_x_mass), guess_x=min_x_thetas)
-        mass_step.append(min(min_x_mass))
-        theta_step.append(min(min_x_thetas))
+    while end_count <5:        
         
+        # Minimise mass first
+        min_x_mass,min_y_mass = Parabolic(func = func,IC=min(min_x_thetas), guess_x=min_x_mass,param = "mass")
+        
+        # Store steps to show steps taken by Univariate
+        mass_step.append(min(min_x_mass))
+        theta_step.append(min(min_x_thetas))
+
+        # Minimise theta next        
+        min_x_thetas, min_y_t = Parabolic(func = func,IC=min(min_x_mass), guess_x=min_x_thetas)
+        
+        # Store steps to show steps taken by Univariate
+        mass_step.append(min(min_x_mass))
+        theta_step.append(min(min_x_thetas))
+            
         # Finds if value repeats 3 times
         R = np.sqrt(min(min_x_thetas)**2 + min(min_x_mass)**2)                
         if round(R,18) == round(R_last,18):
@@ -404,57 +640,105 @@ def Univariate(func,guess_a,guess_b):
             end_count = 0
         R_last = R
         
-#        print(thetas)
-
     return [min_x_mass,min_y_mass,min_x_thetas,min_y_t, mass_step,theta_step]
 
-#%%
+#%% Obtain Results
+
 # Obtain Univariate minimisation    
 values = Univariate(func = NLL,guess_a = [1.5e-3,2e-3,3e-3],guess_b =[0.2, 0.5, 1])
+
+# Relabel values 
 min_masses_2D,min_NLL_masses,min_thetas_2D,min_NLL_thetas,mass_step,theta_step = tuple(values)
 
 # Find Minimum values of masses and thetas
 min_mass_2D = min(min_masses_2D)
 min_theta_2D = min(min_thetas_2D)
 
-# Find errors on univariate
+# Find errors on univariate, using curvature
 std_mass_2D = Error_Curvature(unoscillated,oscillated,min_masses_2D,
                       min_NLL_masses)
 std_t_2D = Error_Curvature(unoscillated,oscillated,min_thetas_2D,
                       min_NLL_thetas)
-   
+
+# Find errors on 2nd Derivative, i.e. curvature
+std_t_dev_2D = Error_2nd_Dev(unoscillated,oscillated,min_mass_2D,ICs,
+                          min_thetas_2D,min_NLL_thetas)
+
 print("============================")
 print("From 2D Univariate Minimiser")
 print("============================") 
 print("Minimum theta = {:.4f} +/- {:.4f}".format(min_theta_2D,std_t_2D))
 print("Minimum mass = {:.7f} +/- {:.7f}".format(min_mass_2D,std_mass_2D))
 print("Minimum NLL = {:.4f}".format(min(min_NLL_thetas)))
-#%%
-# Plots steps on colour map
+print("2nd Dev Error: Change in Curvature = {}".format(std_t_dev_2D))
+
+#%% Verify Univariate minimum values using plots
+
+# Plot steps taken by Univariate
 plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
 plot_steps(theta_step,mass_step,"$\Theta$","$\Delta m^2$",
-           "Steps taken for Univariate minimisation of NLL",font_size = "small")
+           "Accepted steps for Univariate minimisation of NLL",font_size = "small")
+plt.legend()
 
+# Plots minimum value on NLL against del m square
 plot_mass(func = NLL,theta = min(min_thetas_2D),val = round(min(min_thetas_2D),4))
 plt.plot(min(min_masses_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 
+# Plots minimum value on NLL against theta
 plot_theta(func= NLL,mass = min(min_masses_2D),val = round(min(min_masses_2D),6))
 plt.plot(min(min_thetas_2D),NLL(min(min_thetas_2D),min(min_masses_2D)),'x')
 
+# Plot Rates against Energy, to see in predicted oscillated value matches measured data
 predicted = oscillated_prediction(min_theta_2D,min_mass_2D)
-plot_rates(energies,unoscillated,oscillated,predicted,min_p = [min_theta_2D,min_mass_2D,0,0])
+plot_rates(energies,oscillated,predicted,[min_theta_2D,min_mass_2D ])
 
-#%% Simulated Annealing 
-def Simulated_Annealing(func,N,T_start,T_div,xy_step,guesses,limit = None,
-                        PCS_mode = True,PE =0.3, PL = 0.29):
+#%% 4.2 Simultaneous Minimisation 
+
+def Simulated_Annealing(func,N,T_start,T_div,xy_step,guesses,PCS_mode = True,
+                        PE =0.3, PL = 0.29):
+    """
+    Simulated Annealing is a probabilistic minimisation method based on the 
+        principle of thermodynamics. It is governed by the Boltzmann 
+        probability distribution, where random fluctuations could push the 
+        system into a states of higher energy, corresponding to a local minima. 
+        This allows the procedure to escape from local minima and search for 
+        the global minimum.
     
-    def Thermal(E,T):
-        k_b = 1# 1.38e-23
-        return np.exp(- E / (k_b * T))
+    This function is an N dimensional Simulated Annealing function, where each
+        parameter is stored in a list. 
+        
+    -----------
+    Parameters:
+    ----------- 
+    func: Function
+    T_start: Starting Temperature
+    T_div: Sets number of temperature steps taken to reduce T to zero
+    xy_step: list of step sizes for each parameter
+    guesses: list of lists of two values indicating the range of the value
+    PCS_mode: if True, using cooling scheme. If False, uses uniform steps
+    PE, PL: constants controlling cooling rates of PCS
+    """
     
     def PCS(T_o,T_f,T_div,i):
         """
-        probabilistic cooling scheme
+        A Probabilistic Cooling Scheme was used to cool the temperature. 
+        
+        The function contains a log and exponential component that combine 
+        to cool the temperature at different rates depending on its value. 
+        
+        At high temperatures, the exponential component dominates the equation, 
+        causing $T$ to reduce very quickly, whereas the logarithmic component 
+        dominates low temperatures allowing for smaller increments. 
+        
+        This causes a quick search across all local minimas, and an accurate 
+        search for the global minima.         
+        
+        -----------
+        Parameters:
+        ----------- 
+        T_o: Initial Temperature
+        T_f: Final Temperature
+        i: Step number
         """
         N = abs(T_f - T_o) / T_div
         a = 0.01
@@ -464,204 +748,171 @@ def Simulated_Annealing(func,N,T_start,T_div,xy_step,guesses,limit = None,
         T_i = (A/(i+1)+B)*PE + (a*T_o/np.log(1+i))*PL
         return T_i
 
-    t_values = []
-    m_values = []
-    c_values = []
+    # Boltzmann Equation
+    def Thermal(E,T):
+        k_b = 1# Setting to 1 allows for reasonable values for p_acc.
+        return np.exp(- E / (k_b * T))
+
+    # Create list to track steps taken my Sim-Anneal
+    t_steps = []
+    m_steps = []
     
+    # Create list of zeros, to allow for N dimensional minimisation
     x = [0]* N
     x_dash = [0] * N
-    h = xy_step# step sizes (initial conditions)
+    
+    # step sizes (initial conditions)
+    h = xy_step
     
     # Set guesses 
     for i in range(len(x)):
         x[i] = random.uniform(guesses[i][0],guesses[i][1])
     
+    # Store counters to find efficiency of method
     success_count = 0
     count = 1
+    
+    # Relable starting temperature
     T = T_start
-
     print("Starting Temperature {:.2f} K".format(T))
+    
+    # Just larger than machine epsilon ~ 1e-16
     while T > 1e-15:
 
+        # Print temperature to track progress
         if count % 1000 == 0:
             print("Temperature {:.4f} K".format(T))
-            t_values.append(x_dash[0])
-            m_values.append(x_dash[1])
-#            
-c_values.append(x_dash[2])
             
+        # Generate new points for each parameter
         for i in range(len(x)):
             x_dash[i] = random.gauss(x[i],h[i])
-
-#        if limit != None:
-        while x_dash[0] < 0:
-            x_dash[0] = random.uniform(x[0]-h[0],limit)
-
+        
+        # Find change in energy from new point and old point 
         del_f = np.array(func(*x_dash)) - np.array(func(*x)) 
+        
+        # Find acceptance probability
         p_acc = Thermal(del_f,T)
        
-        if del_f <= 0:# if next energy value is smaller, then update
+        # if next energy value is smaller, then kepp 100% of time
+        if del_f <= 0:
             for i in range(len(x)):
-                x[i] = x_dash[i]            
+                x[i] = x_dash[i]    
+            
+            # Keep track of steps
             success_count +=1
-            t_values.append(x[0])
-            m_values.append(x[1])
+            t_steps.append(x[0])
+            m_steps.append(x[1])
         
-        elif p_acc > random.uniform(0,1):# probability of selecting other point
-#            print(p_acc)
+        # accept value with probability, to escape local minimas 
+        elif p_acc > random.uniform(0,1):
             for i in range(len(x)):
-                x[i] = x_dash[i]            
+                x[i] = x_dash[i]  
+                
             success_count +=1
-            t_values.append(x[0])
-            m_values.append(x[1])
+            t_steps.append(x[0])
+            m_steps.append(x[1])
             
         else:
             pass 
         
+        # Option to turn off PCS
         if PCS_mode == False:
             T -= T_div
         else:
             T = PCS(T_start,0,T_div,count)
         count+=1
         
-    t_values.append(x[0])
-    m_values.append(x[1])
-#    c_values.append(x_dash[2])
+    # Append final value
+    t_steps.append(x[0])
+    m_steps.append(x[1])
 
+    # Find NLL Value
     NLL_value = func(*x) 
     print("Minimum function value = ",NLL_value)
     print("Minimum Values = ",x)
 
-    print("Efficiency = {:.4f}%".format(success_count/count * 100))    
-    print(count)      
-    return x,NLL_value,[t_values,m_values,c_values]
+    print("Efficiency = {:.4f}% of {} steps".format(success_count/count * 100,
+                                                      count))    
+    return x, NLL_value, [t_steps,m_steps]
+
+
 
 #%% Sample Run - 2D Simulated Annealing with NLL 
 min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 2,T_start = 1000,T_div = 1,
                                       xy_step = [0.1,0.5e-3],
                                           guesses = [[0.7,0.8],[2e-3,3e-3]])
 
-print("... Sample RUN")
+# Find errors
+stds = Error_abs_addition(min_p,min_NLL)
+
 print("===========================")
 print("From 2D Simulated Annealing")
 print("===========================") 
-print("Minimum theta = {:.4f}".format(min_p[0]))
-print("Minimum mass = {:.7f}".format(min_p[1]))
+print("Minimum theta = {:.4f} + {}".format(min_p[0],np.round(stds[0],4)))
+print("Minimum mass = {:.7f} + {}".format(min_p[1],np.round(stds[1],7)))
 print("Minimum NLL = {:.4f}".format(min_NLL))
-#%%
-predicted = oscillated_prediction(*min_p)
-plot_rates(energies,unoscillated,oscillated,predicted,val = (min_p[0],min_p[1]))
 
-#%% Sample Run - 3D Simulated Annealing with Cross Section
-#min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
-#                                          xy_step = [0.05,0.5e-3,0.1],
-#                                          guesses = [[0.7,0.8],[2e-3,3e-3],
-#                                                     [0.3,0.35]]) 
-#
+#%% Plot rates against energy to see if parameters fit measured data
+predicted = oscillated_prediction(*min_p)
+plot_rates(energies,oscillated,predicted,min_p)
+
+#%% 5. Neutrino Oscillation cross-section
+
+# Sample Run - 3D Simulated Annealing with Cross Section
 min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
                                           xy_step = [0.15,0.5e-3,0.1],
-                                          guesses = [[0.7,0.8],[2e-3,3e-3],
-                                                     [1,2]])
-#min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
-#                                          xy_step = [0.15,0.5e-3,0.1],
-#                                          guesses = [[0.2,1.2],[1e-3,5e-3],
-#                                                     [1,2]],PE = 0.3)
-                
-print("... Sample RUN")
+                                          guesses = [[0.4,1],[1e-3,5e-3],
+                                                     [0.5,2.5]])
+# Find errors          
+stds = Error_abs_addition(min_p,min_NLL)
+
 print("===========================")
 print("From 3D Simulated Annealing")
 print("===========================") 
-print("Minimum theta = {:.4f}".format(min_p[0]))
-print("Minimum mass = {:.7f}".format(min_p[1]))
-print("Minimum cross section = {:.4f}".format(min_p[2]))
+print("Minimum theta = {:.4f} + {}".format(min_p[0],np.round(stds[0],4)))
+print("Minimum mass = {:.7f} + {}".format(min_p[1],np.round(stds[1],7)))
+print("Minimum cross section = {:.4f} + {}".format(min_p[2],np.round(stds[2],4)))
 print("Minimum NLL = {:.4f}".format(min_NLL))
 
-#%%
-
-
-# Plot energies against rates 
-#min_p.append(0.4)
-min_p.append(0)
+#%% Plot rates against energy to see if parameters fit measured data
 predicted = oscillated_prediction(*min_p)
-plot_rates(energies,unoscillated,oscillated,predicted,min_p)
-         
+plot_rates(energies,oscillated,predicted,min_p)
 
-#%% Plot theta 
-labels = [round(x,4) for x in min_p]
-plot_theta(NLL,min_p[1],min_p[2],val= tuple(labels))
-plt.plot(min_p[0], NLL(*min_p),'x')
-
-
-#%% Plot steps for simulated Annealing
-plot_color_map(np.linspace(0,np.pi,100),np.linspace(0,5e-3,100),NLL)
-plot_steps(steps[0],steps[1],"$ \Theta_{23}$","$\Delta m_{23}^2$","Simulated Annealing for NLL")
+#%% Plot steps for 3D Simulated Annealing
+plot_color_map(np.linspace(0,np.pi/2,100),np.linspace(0,5e-3,100),NLL)
+plot_steps(steps[0],steps[1],"$ \Theta_{23}$","$\Delta m_{23}^2$",
+           "Accepted Steps for Simulated Annealing for NLL")
 plt.legend(loc=1, prop={'size': 12})
 
-#%% 4D minimisation, with offset
+#%% Comment on cross section
+"""
+The NLL value was seen to reduce by 81% when comparing between the 2D and 3D 
+case. 
+
+This enforces the idea that the cross section is a suitable parameter to 
+neutrino oscillations.
+"""
+#%% Comment on annealing better than univariate
+"""
+For comparison, 
+
+Simulated Annealing requires a longer time but can have a 
+large search range before converging on the global minima of the system. 
+
+Univariate is much quicker and direct in its search since it is not 
+probabilistic, allowing results to be reproducible. However it can get trapped 
+in local minima and thus benefits from a small starting search range.
+"""
+
+#%% 4D minimisation, with offset, to verify. 
 min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 4,T_start = 1000,T_div = 1,
                                           xy_step = [0.15,1e-3,0.2,0.05],
                                           guesses = [[0.7,0.8],[2e-3,3e-3],
                                                      [0.7,0.8],[0.4,0.5]])
-#%%
-predicted = oscillated_prediction(*min_p,)
-plot_rates(energies,unoscillated,oscillated,predicted,min_p )
-                         
-#%%
-predicted = oscillated_prediction(min_p[0],min_p[1],min_p[2],0.4)
-labels = [round(x,4) for x in min_p]
-labels[3] = 0.4
-plot_rates(energies,unoscillated,oscillated,predicted,min_p = tuple(labels))
-         
-#%% Calculate Errors for 2D Simulated Annealing Parameters
-thetas = []
-masses = []
-NLL_l = []
-
-for i in range(10):
-    min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 2,T_start = 1000,T_div = 1,
-                                              xy_step = [0.1,0.5e-3],
-                                              guesses = [[0.7,0.8],[2e-3,3e-3]])
-    thetas.append(min_p[0])
-    masses.append(min_p[1])
-    NLL_l.append(min_NLL)
-
-
-print("===========================")
-print("From 2D Simulated Annealing")
-print("===========================") 
-print("Minimum theta = {:.4f} +/- {:.4f}".format(np.mean(thetas),np.std(thetas)))
-print("Minimum mass = {:.7f} +/- {:.7f}".format(np.mean(masses),np.std(masses)))
-print("Minimum NLL = {:.4f} +/- {:.4f}".format(np.mean(NLL_l),np.std(NLL_l)))
-
-#%% Calculate Errors for 3D Simulated Annealing Parameters
-thetas = []
-masses = []
-cross = []
-NLL_l = []
-
-for i in range(10):#[0.05,0.1,0.15,0.2,0.25,0.3]:
-    min_p,min_NLL,steps = Simulated_Annealing(NLL,N = 3,T_start = 1000,T_div = 1,
-                                          xy_step = [0.15,0.5e-3,0.1],
-                                          guesses = [[0.7,0.8],[2e-3,3e-3],
-                                                     [1,2]])
-    thetas.append(min_p[0])
-    masses.append(min_p[1])
-    cross.append(min_p[2])
-    NLL_l.append(min_NLL)
-    
-thetas = [[abs(x-np.pi/2) for x in thetas if x > np.pi/4], 
-        [x for x in thetas if x < np.pi/4]]
-thetas = [item for sublist in abc for item in sublist]    
-
-print("===========================")
-print("From 3D Simulated Annealing")
-print("===========================") 
-print("Minimum theta = {:.4f} +/- {:.4f}".format(np.mean(thetas),np.std(thetas)))
-print("Minimum mass = {:.7f} +/- {:.7f}".format(np.mean(masses),np.std(masses)))
-print("Minimum cross section = {:.4f} +/- {:.4f}".format(np.mean(cross),np.std(cross)))
-print("Minimum NLL = {:.4f} +/- {:.4f}".format(np.mean(NLL_l),np.std(NLL_l)))
-
+# Returns C ~ 0
+            
 #%% Test Function: Ackley
+            
 def Ackley(x,y):
     x = np.array(x)
     y = np.array(y)
@@ -680,11 +931,12 @@ print("1D Parabolic Min for Ackley x = {} where (y = 0)".format(min(test_x)))
 test = Univariate(func = Ackley,guess_a = [-0.5,0,0.5],guess_b = [-0.5,0,0.5])
 print("2D Univariate Min for Ackley: x = {},y = {}".format(min(test[0]),min(test[2])))
 
-#%% Simulated Annealing test with Ackley function 
-min_p,min_NLL,steps = Simulated_Annealing(Ackley,N = 2,T_start = 100,T_div =0.01,xy_step = [0.2,0.2],
-                      guesses = [[-5,5],[-5,5]],PE = 0.8,PL = 0.1)
 
-plot_color_map(np.linspace(-5,5,100),np.linspace(-5,5,100),Ackley)
+# Simulated Annealing Minimisation
+min_p,min_NLL,steps = Simulated_Annealing(Ackley,N = 2,T_start = 1000,T_div =1,xy_step = [0.2,0.2],
+                      guesses = [[-5,5],[-5,5]],PE = 0.3,PL = 0.29)
+
+plot_color_map(np.linspace(-10,10,200),np.linspace(-10,10,200),Ackley)
 plot_steps(steps[0],steps[1],"x","y","Simulated Annealing for Ackley")
 plt.legend(loc=1, prop={'size': 12})
 
@@ -707,24 +959,4 @@ print("2D Univariate Min for sphere: x = {},y = {}".format(min(test[2]),min(test
 """
 m very bumpy, so better to find the minimum of m first and then theta, so that
 the minimisation doesn't get stuck in a local minima in m. 
-"""
-#TODO: Comment on merit of both methods of error
-"""
-Error in curvature is good because it follows from a parabolic fit, so would
-    give a more accurate value following the minimisation
-
-Error in +/- 0.5 is also good because it gives roughly the same value, but then
-    is faster
-"""
-    #TODO: Comment on annealing better than univariate?
-"""
-Annealing doesn't get stuck in local minima. but univariate is more direct. 
-"""
-    #TODO: Comment on cross section?
-"""
-With adding cross section, minimises to pi/4
-"""
-    #TODO: comment Error as pi/4?
-"""
-expect the error to reduce?
 """
