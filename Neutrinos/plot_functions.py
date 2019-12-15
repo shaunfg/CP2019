@@ -24,7 +24,6 @@ def plot_mass(func,theta = np.pi/4,val = "$\pi$ / 4"):
 def plot_theta(func,mass = 2.4e-3,cross_a = "None",val = "2.4e-3"):
     
     thetas = np.arange(0,np.pi,0.002)
-    # Calculate NLL 
     NLL_thetas = func(thetas,mass,cross_a)
     
     plt.figure()

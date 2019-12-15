@@ -3,12 +3,13 @@
 """
 Created on Mon Nov 18 19:10:25 2019
 
-
 @author: ShaunGan
 """
-import os
-os.chdir("/Users/ShaunGan/Desktop/computational-physics/Neutrinos")
+## Change Working Directory if data.txt not found!
 
+# import os
+# os.chdir("/Users/ShaunGan/Desktop/computational-physics/Neutrinos")
+ #%%
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -564,27 +565,28 @@ print("2nd Dev Error: Change in Curvature = {}".format(std_t_dev))
 
 #%% Comment Error as theta --> pi/4
 """
-As the value of theta tends to pi/4, errors at this value would be incorrect 
-since it is a maxima and hence is followed by a negative curvature. 
-
-The values obtained for the next NLL value +1/2 would ignore the minimas below 
-and interpolate the fits incorrectly to provide inaccurate uncertainties in 
-theta.
+    As the value of theta tends to pi/4, the bump seen at pi/4 reduces and 
+    theta tends to a minimum value, and hence errors at this point would be 
+    symmetrical. 
+    
+    The bump does always reduce as theta --> pi/4, avoiding the incorrect case 
+    where points are interpolated in a manner that neglects the local minima.
 """
 
 #%% Comment on merit of both methods of error
 """
-The curvature method provided a more precise uncertainty for the parabolic 
-minimiser as it dealt specifically with parabolas. 
-
-The linear fit requires less paramters for implementation, but depends on the 
-accuracy used between points when interpolated. Although with a sufficiently
-high accuracy, the difference between methods would be small (at the cost of
-computation time).
-
-Both came out to give similar results within 1\% of each other. 
-
-Curvature was used for Univariate and linear was used for Simulated Annealing. 
+    The curvature method provided a more precise uncertainty for the parabolic 
+    minimiser as it dealt specifically with parabolas. 
+    
+    The linear fit requires less paramters for implementation, but depends on 
+    the accuracy used between points when interpolated. Although with a 
+    sufficiently high accuracy, the difference between methods would be small 
+    (at the cost of computation time).
+    
+    Both came out to give similar results within 1\% of each other. 
+    
+    Curvature was used for Univariate and linear was used for Simulated 
+    Annealing. 
 """
 
 #%% 4.1 Univariate Method
@@ -674,13 +676,14 @@ print("2nd Dev Error: Change in Curvature = {}".format(std_t_dev_2D))
 
 #%% Comment why do m first -- plot graphs
 """
-Delta m square was minimised before minimising theta. 
-
-This is because NLL against delta m square displayed many more local minima 
-    when theta was near pi/4. Setting a low guess theta first (~0.1), produces 
-    a smoother function for NLL against delta m square, reducing the chances of 
-    getting stuck in a local minima, increasing the speed of the method. 
+    Delta m square was minimised before minimising theta. 
     
+    This is because NLL against delta m square displayed many more local minima 
+        when theta was near pi/4. Setting a low guess theta first (~0.1), 
+        produces a smoother function for NLL against delta m square, reducing 
+        the chances of getting stuck in a local minima, increasing the speed of 
+        the method. 
+        
 """
 #%% Verify Univariate minimum values using plots
 
@@ -898,22 +901,23 @@ plt.legend(loc=1, prop={'size': 12})
 
 #%% Comment on cross section
 """
-The NLL value was seen to reduce by 81% when comparing between the 2D and 3D 
-case. 
-
-This enforces the idea that the cross section is a suitable parameter to 
-neutrino oscillations.
+    The NLL value was seen to reduce by 81% when comparing between the 2D and 
+    3D case. 
+    
+    This enforces the idea that the cross section is a suitable parameter to 
+    neutrino oscillations.
 """
 #%% Comment on annealing better than univariate
 """
-For comparison, 
-
-Simulated Annealing requires a longer time but can have a 
-large search range before converging on the global minima of the system. 
-
-Univariate is much quicker and direct in its search since it is not 
-probabilistic, allowing results to be reproducible. However it can get trapped 
-in local minima and thus benefits from a small starting search range.
+    For comparison, 
+    
+    Simulated Annealing requires a longer time but can have a 
+    large search range before converging on the global minima of the system. 
+    
+    Univariate is much quicker and direct in its search since it is not 
+    probabilistic, allowing results to be reproducible. However it can get 
+    trapped in local minima and thus benefits from a small starting search 
+    range.
 """
 
 #%% 4D minimisation, with offset, to verify. 
@@ -937,6 +941,7 @@ def Ackley(x,y):
 
 # Generate sample data to display plot
 sample_x = np.linspace(-5,5,1000)
+plt.figure()
 plt.plot(sample_x, Ackley(sample_x,0))
 plt.title("Ackley Function")
 

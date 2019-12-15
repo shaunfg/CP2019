@@ -1,89 +1,99 @@
+###############################################
 
+  SHAUN FENDI GAN - Computing Project 2019
+  01331868, sfg17@ic.ac.uk
 
-# Project Title
+#############################################
 
-One Paragraph of project description goes here
+#######################################################################################
+## Extracting Neutrino Oscillations Parameters from a Log-Likelihood Fit (Project 1) ##
+#######################################################################################
 
-## Getting Started
+Negative Log Likelihood (NLL) for the survival probability of neutrino oscillations was minimised to find model values that described the physical phenomenon. A 2D Univariate parabolic minimiser and N-dimensional Simulated Annealing minimiser was applied to obtain these parameters. Errors for Univariate were found by assessing the curvature and errors for Simulated Annealing assessing NLL shifted by $0.5$. 
+    
+The  aim  of  this  project  was  to  minimise  the  negative  log-likelihood  function,  given  a  sample  of  data  and  the  survival probability  for  neutrino  oscillations.  The  Super-Kamiokande detector was the first to present this phenomenon of neutrino mixing  in  1998,  indicating  that  these  neutrino  particles  had mass. The three neutrino flavours are the: electron, muon and  tau  neutrinos  and  the  mixing  occurs  due  to  a  mixing  of their mass and flavour eigenstates.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Additionally, the methods were verified and tested using the Ackley and Sphere function, with colour maps plotted to assess the steps taken by each minimiser. Error using the second derivative of the negative log likelihood was also explored to assess closeness of fit. A Probabilistic Cooling Scheme in Simulated Annealing was implemented to reduce temperatures efficiently. 
 
-### Prerequisites
+################
+## Motivation ##
+################
 
-What things you need to install the software and how to install them
+Project 1 was selected as the outcome of the entire project appeared the most appealing, through thorough analysis, real results relating to a physical phenomenon could be found from the project. I thought it would give a taste into some aspects of how neutrino physics is carried out.
 
-```
-Give examples
-```
+Additionally, minimisation is currently an extremely important field in computing as in currently underpins many of the modern day machine learning algorithms - e.g. gradient descent being one that is being implemented in neural networks. 
 
-### Installing
+################
+## Code style ##
+################
 
-A step by step series of examples that tell you how to get a development env running
+Code style follows a chronological order as stated in the project problem sheet. Sections are answered and completed by coding functions and run-codes that run the functions. The section being answered is labelled as comments at the beginning of segments. Each function and run-code are segmented by ‘#%%’ separators, which only operate on Spyder and Visual Studio Code.
 
-Say what the step will be
+Pandas is used extensively within the code in order for data management and indexing. It serves as a convenient alternative to numpy as x-y values are linked together in a dataframe, where indexing is automatically taken care of when filtering data. 
 
-```
-Give the example
-```
+Comments are made throughout to explain purposes of certain lines of code. Docstrings are used in order to highlight a specific result or required answers comments, or to highlight the operation of certain functions. 
 
-And repeat
+######################
+## Running the code ##
+######################
 
-```
-until finished
-```
+- Open neutrino_oscillations.py in Spyder or Visual Studio Code
+    - This will allow you to run the code in segments, and assess each component clearly 
+- Run code is segments or code blocks, chronologically.
 
-End with an example of getting some data out of the system or using it for a little demo
+######################
+## Common Bug Fixes ##
+######################
+- Ensure pandas is installed if errors such as ‘pd is not defined occur’ 
+- Change working directory to the folder containing the scripts and data, using the in built python os package
+    - Use os.chdir(<folder directory>)
+    - Issues like this could occur when using IDEs such as spyder
+- Do not convert into Jupyter notebook as resulted in floating point rounding errors.
+- If other errors persist, please attempt on running using a Mac OS hardware or emailing me at sfg17@ic.ac.uk. 
 
-## Running the tests
+###########
+## Files ##
+###########
+1. neutrino_oscillations.py
+    - Main script - contains all the analysis of the project 
+2. plot_functions.py
+    - secondary file, contains functions used in the main script to display data for thorough analysis 
+    - Imported by the main script 
+3. Data.txt
+    - contains personalised raw data file (previously sfg17.txt) 
 
-Explain how to run the automated tests for this system
+#########################
+## Tech/framework used ##
+#########################
+Built with:
+- [Spyder](https://www.spyder-ide.org)
+    - Based in the default anaconda environment (https://www.anaconda.com)
 
-### Break down into end to end tests
+##############
+## Features ##
+##############
+- Univariate Parabolic Minimisation - 1D & 2D
+- Simulated Annealing Minimisation - N Dimensional
+    - Includes probabilistic cooling scheme for efficient cooling
+- Colour map plots / Heat maps
+- Errors in linear, curvature and second derivatives 
+- Histogram and plot functions to analyse phenomena discovered 
+- Test functions - Ackley & Sphere 
 
-Explain what these tests test and why
+#################
+## Validations ##
+#################
+- Tested Univariate against sphere and Ackley functions
+- Tested Simulated Annealing against the Ackley function
+- Compared plot of rates against energy of predicted rates and measured rates to display successful minimisation representing the underlying phenomena
+- Compared error in parabolic curvature fit in univariate method, to actual value from NLL (Error in 2nd Derivative)
+- Visualised steps taken by minimisers, to verify that it works as expected by theory.
 
-```
-Give an example
-```
+#############
+## Credits ##
+#############
+Thank you Mark Scott for the help in labs.
 
-### And coding style tests
+© [Shaun Fendi Gan](sfg17)
 
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+14th December 2019
