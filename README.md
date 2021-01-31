@@ -1,6 +1,8 @@
 # Computational-Physics
 PHYS96010 -  Computational Physics. Includes Problem Sheets, Assignments, and Project
 
+* Topics covered include : LU Decomposition, Gradient Descent, Gaussian Elimination, Pseudo-random generators, numeric integrators, differentiatiors
+
 # Extracting Neutrino Oscillations Parameters from a Log-Likelihood Fit
 Abstract—Negative Log-Likelihood (NLL) for the survival
 probability of neutrino oscillations was minimised to find model
